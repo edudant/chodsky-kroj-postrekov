@@ -7,54 +7,91 @@ export interface ColorRange {
   lMax: number;
 }
 
+export interface PolygonRegion {
+  points: Array<{ x: number; y: number }>;
+}
+
 export interface KrojPart {
   name: string;
   originalColorRange: ColorRange;
+  region: PolygonRegion;
 }
 
 export const krojParts: Record<string, KrojPart> = {
   satek: {
     name: 'Šátek',
     originalColorRange: {
-      hMin: 20,
-      hMax: 40,
-      sMin: 10,
-      sMax: 50,
-      lMin: 50,
-      lMax: 85,
+      hMin: 0,
+      hMax: 360,
+      sMin: 0,
+      sMax: 100,
+      lMin: 0,
+      lMax: 100,
+    },
+    region: {
+      points: [
+        { x: 0.35, y: 0.15 },
+        { x: 0.65, y: 0.15 },
+        { x: 0.60, y: 0.35 },
+        { x: 0.40, y: 0.35 },
+      ],
     },
   },
   fjertuch: {
     name: 'Fjertuch',
     originalColorRange: {
-      hMin: 80,
-      hMax: 160,
-      sMin: 20,
+      hMin: 0,
+      hMax: 360,
+      sMin: 0,
       sMax: 100,
-      lMin: 15,
-      lMax: 75,
+      lMin: 0,
+      lMax: 100,
+    },
+    region: {
+      points: [
+        { x: 0.30, y: 0.50 },
+        { x: 0.75, y: 0.50 },
+        { x: 0.75, y: 0.90 },
+        { x: 0.30, y: 0.90 },
+      ],
     },
   },
   sukne: {
     name: 'Sukně',
     originalColorRange: {
-      hMin: 340,
-      hMax: 20,
-      sMin: 30,
+      hMin: 0,
+      hMax: 360,
+      sMin: 0,
       sMax: 100,
-      lMin: 20,
-      lMax: 75,
+      lMin: 0,
+      lMax: 100,
+    },
+    region: {
+      points: [
+        { x: 0.05, y: 0.61 },
+        { x: 0.25, y: 0.61 },
+        { x: 0.25, y: 0.89 },
+        { x: 0.05, y: 0.89 },
+      ],
     },
   },
   pantle: {
     name: 'Pantle',
     originalColorRange: {
-      hMin: 45,
-      hMax: 70,
-      sMin: 55,
+      hMin: 0,
+      hMax: 360,
+      sMin: 0,
       sMax: 100,
-      lMin: 40,
-      lMax: 85,
+      lMin: 0,
+      lMax: 100,
+    },
+    region: {
+      points: [
+        { x: 0.62, y: 0.39 },
+        { x: 0.70, y: 0.39 },
+        { x: 0.70, y: 0.47 },
+        { x: 0.62, y: 0.47 },
+      ],
     },
   },
 };
@@ -120,17 +157,18 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
   return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 }
 
-function isInColorRange(h: number, s: number, l: number, range: ColorRange): boolean {
-  const { hMin, hMax, sMin, sMax, lMin, lMax } = range;
-  
-  let hInRange = false;
-  if (hMin <= hMax) {
-    hInRange = h >= hMin && h <= hMax;
-  } else {
-    hInRange = h >= hMin || h <= hMax;
+function isPointInPolygon(x: number, y: number, polygon: Array<{ x: number; y: number }>): boolean {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i].x;
+    const yi = polygon[i].y;
+    const xj = polygon[j].x;
+    const yj = polygon[j].y;
+    
+    const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
   }
-  
-  return hInRange && s >= sMin && s <= sMax && l >= lMin && l <= lMax;
+  return inside;
 }
 
 export function replaceColors(
@@ -154,7 +192,11 @@ export function replaceColors(
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
 
-    const replacements: Array<{ range: ColorRange; targetHsl: [number, number, number] }> = [];
+    const replacements: Array<{ 
+      region: PolygonRegion; 
+      targetHsl: [number, number, number];
+      range: ColorRange;
+    }> = [];
     
     for (const [partKey, hexColor] of Object.entries(colorReplacements)) {
       const part = krojParts[partKey];
@@ -162,34 +204,44 @@ export function replaceColors(
         const rgb = hexToRgb(hexColor);
         if (rgb) {
           const targetHsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-          replacements.push({ range: part.originalColorRange, targetHsl });
+          replacements.push({ 
+            region: part.region, 
+            targetHsl,
+            range: part.originalColorRange
+          });
         }
       }
     }
 
-    for (let i = 0; i < data.length; i += 4) {
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
-      const a = data[i + 3];
-      
-      if (a === 0) continue;
-      
-      const [h, s, l] = rgbToHsl(r, g, b);
-      
-      for (const { range, targetHsl } of replacements) {
-        if (isInColorRange(h, s, l, range)) {
-          const normalizedL = (l - range.lMin) / (range.lMax - range.lMin);
-          const targetVariance = 15;
-          const newL = Math.max(0, Math.min(100, 
-            targetHsl[2] + (normalizedL - 0.5) * targetVariance
-          ));
-          
-          const [newR, newG, newB] = hslToRgb(targetHsl[0], targetHsl[1], newL);
-          data[i] = newR;
-          data[i + 1] = newG;
-          data[i + 2] = newB;
-          break;
+    for (let y = 0; y < canvas.height; y++) {
+      for (let x = 0; x < canvas.width; x++) {
+        const i = (y * canvas.width + x) * 4;
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const a = data[i + 3];
+        
+        if (a === 0) continue;
+        
+        const normalizedX = x / canvas.width;
+        const normalizedY = y / canvas.height;
+        
+        const [h, s, l] = rgbToHsl(r, g, b);
+        
+        for (const { region, targetHsl, range } of replacements) {
+          if (isPointInPolygon(normalizedX, normalizedY, region.points)) {
+            const normalizedL = (l - range.lMin) / (range.lMax - range.lMin);
+            const targetVariance = 15;
+            const newL = Math.max(0, Math.min(100, 
+              targetHsl[2] + (normalizedL - 0.5) * targetVariance
+            ));
+            
+            const [newR, newG, newB] = hslToRgb(targetHsl[0], targetHsl[1], newL);
+            data[i] = newR;
+            data[i + 1] = newG;
+            data[i + 2] = newB;
+            break;
+          }
         }
       }
     }

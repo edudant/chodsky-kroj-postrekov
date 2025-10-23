@@ -166,29 +166,30 @@ Možná rozšíření aplikace:
 ## Poznámky k vývoji
 
 ### Nahrazování barev
-Aplikace používá pokročilý systém nahrazování barev založený na HSL color range matching:
+Aplikace používá pokročilý systém nahrazování barev založený na polygon regionech:
 
 1. **Definice oblastí** (`colorReplacer.ts`):
-   - Každá část kroje má definovaný HSL rozsah původní barvy na fotografii
-   - **Šátek** (béžová na krku): H:25-50°, S:15-65%, L:55-85%
-   - **Fjertuch** (zelená zástěra): H:80-160°, S:20-100%, L:15-75%
-   - **Sukně** (červená sukně vlevo): H:340-20°, S:35-100%, L:25-75%
-   - **Pantle** (červený pásek u pasu): H:345-15°, S:50-100%, L:35-65%
+   - Každá část kroje má definovanou polygon oblast v normalizovaných souřadnicích (0-1)
+   - **Šátek** (šátek na krku): x:0.35-0.65, y:0.15-0.35
+   - **Fjertuch** (zástěra uprostřed): x:0.30-0.75, y:0.50-0.90
+   - **Sukně** (sukně vlevo): x:0.05-0.25, y:0.61-0.89
+   - **Pantle** (stuhy vpravo): x:0.62-0.70, y:0.39-0.47
 
 2. **Proces nahrazování**:
    - Načte se šablona obrázku kroje (`/kroj-sablona.jpg`)
-   - Při výběru varianty se detekuje její dominantní barva
+   - Při výběru varianty se použije předem definovaná dominantní barva
    - Algoritmus projde každý pixel obrázku
-   - Pixely odpovídající HSL rozsahu dané části se nahradí novou barvou
-   - Pro světlejší pixely (L ≥ 50) se zachovává původní světlost
-   - Pro tmavší pixely (L < 50) se používá tmavší varianta nahrazované barvy
-   - Pro velmi tmavé pixely (L < 30) se používá max 50% světlosti cílové barvy
+   - Pro každý pixel zkontroluje, zda je uvnitř některého polygon regionu (point-in-polygon algorithm)
+   - Pokud je pixel uvnitř regionu, nahradí se barvou vybrané varianty
+   - Zachovává se textura pomocí ±7.5% variance kolem cílové světlosti
    - Vrací se data URL zpracovaného obrázku
 
-3. **Optimalizace**:
-   - Canvas API s `willReadFrequently` příznakem
-   - Bucketing algoritmus pro rychlejší detekci dominantní barvy
-   - Vyloučení příliš světlých a tmavých pixelů
+3. **Výhody polygon přístupu**:
+   - Žádné konflikty mezi barevnými rozsahy různých částí
+   - Každá část je zcela izolovaná od ostatních
+   - Možnost být agresivnější - nahrazuje VŠECHNY pixely v dané oblasti
+   - Žádná křížová kontaminace mezi sukní, fěrtuchem, šátkem a pantlemi
+   - Canvas API s `willReadFrequently` příznakem pro rychlejší přístup k pixelům
 
 ### Další poznámky
 - Fotografie součástí jsou staženy z původního prototypu na https://edudant.github.io/chodsky-kroj/
