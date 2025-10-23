@@ -12,37 +12,47 @@ export function extractDominantColor(imageSrc: string): Promise<string> {
         return;
       }
 
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
+      const scale = Math.min(200 / img.width, 200 / img.height);
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
       
-      let r = 0, g = 0, b = 0;
-      let count = 0;
-
+      const colorCounts: { [key: string]: number } = {};
+      
       for (let i = 0; i < data.length; i += 4) {
         const alpha = data[i + 3];
-        if (alpha > 200) {
-          r += data[i];
-          g += data[i + 1];
-          b += data[i + 2];
-          count++;
+        if (alpha < 200) continue;
+        
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        
+        if (r > 240 && g > 240 && b > 240) continue;
+        if (r < 30 && g < 30 && b < 30) continue;
+        
+        const rBucket = Math.floor(r / 40) * 40;
+        const gBucket = Math.floor(g / 40) * 40;
+        const bBucket = Math.floor(b / 40) * 40;
+        
+        const key = `${rBucket},${gBucket},${bBucket}`;
+        colorCounts[key] = (colorCounts[key] || 0) + 1;
+      }
+
+      let maxCount = 0;
+      let dominantColor = '#888888';
+      
+      for (const [color, count] of Object.entries(colorCounts)) {
+        if (count > maxCount) {
+          maxCount = count;
+          const [r, g, b] = color.split(',').map(Number);
+          dominantColor = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
         }
       }
 
-      if (count === 0) {
-        resolve('#888888');
-        return;
-      }
-
-      r = Math.floor(r / count);
-      g = Math.floor(g / count);
-      b = Math.floor(b / count);
-
-      const hex = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
-      resolve(hex);
+      resolve(dominantColor);
     };
 
     img.onerror = () => {
@@ -54,48 +64,38 @@ export function extractDominantColor(imageSrc: string): Promise<string> {
 }
 
 export function colorToString(color: string): string {
-  const colorMap: Record<string, string> = {
-    '#dc2626': 'red',
-    '#ef4444': 'red',
-    '#b91c1c': 'red',
-    '#ffffff': 'white',
-    '#f9fafb': 'white',
-    '#fafafa': 'white',
-    '#eab308': 'yellow',
-    '#fbbf24': 'yellow',
-    '#f59e0b': 'yellow',
-    '#3b82f6': 'blue',
-    '#2563eb': 'blue',
-    '#1d4ed8': 'blue',
-    '#22c55e': 'green',
-    '#16a34a': 'green',
-    '#15803d': 'green',
-    '#ec4899': 'pink',
-    '#db2777': 'pink',
-    '#be185d': 'pink',
-    '#a855f7': 'purple',
-    '#9333ea': 'purple',
-    '#7c3aed': 'purple',
-  };
-
-  const normalizedColor = color.toLowerCase();
-  
-  for (const [hex, name] of Object.entries(colorMap)) {
-    if (normalizedColor.includes(hex)) {
-      return name;
-    }
-  }
-
   const rgb = hexToRgb(color);
   if (!rgb) return 'unknown';
 
-  if (rgb.r > 200 && rgb.g < 100 && rgb.b < 100) return 'red';
-  if (rgb.r > 200 && rgb.g > 200 && rgb.b < 100) return 'yellow';
-  if (rgb.r < 100 && rgb.g > 150 && rgb.b < 100) return 'green';
-  if (rgb.r < 100 && rgb.g < 100 && rgb.b > 200) return 'blue';
-  if (rgb.r > 200 && rgb.g < 150 && rgb.b > 150) return 'pink';
-  if (rgb.r > 230 && rgb.g > 230 && rgb.b > 230) return 'white';
-  if (rgb.r > 100 && rgb.g > 100 && rgb.b > 150) return 'colorful';
+  const { r, g, b } = rgb;
+  
+  if (r > 230 && g > 230 && b > 230) return 'white';
+  
+  if (r > 180 && g < 100 && b < 100) return 'red';
+  
+  if (r > 180 && g > 150 && b < 120) return 'yellow';
+  
+  if (r < 120 && g > 150 && b < 120) return 'green';
+  
+  if (r < 120 && g < 120 && b > 180) return 'blue';
+  
+  if (r > 150 && g < 150 && b > 150) return 'purple';
+  
+  if (r > 180 && g < 150 && b > 120) return 'pink';
+  
+  if (r > 100 && g > 50 && b < 80) return 'brown';
+  
+  const maxComponent = Math.max(r, g, b);
+  const minComponent = Math.min(r, g, b);
+  const saturation = maxComponent > 0 ? (maxComponent - minComponent) / maxComponent : 0;
+  
+  if (saturation > 0.3 && Math.abs(r - g) < 60 && Math.abs(g - b) < 60) {
+    return 'colorful';
+  }
+  
+  if (saturation < 0.2) {
+    return r > 150 ? 'white' : 'gray';
+  }
 
   return 'colorful';
 }

@@ -1,27 +1,46 @@
 {
   "validationRules": {
-    "comment": "Pravidla pro vyhodnocení barevných kombinací - můžete upravit podle tradičních pravidel",
+    "comment": "Pravidla pro vyhodnocení barevných kombinací - můžete upravit podle tradičních pravidel. Každá povolená kombinace obsahuje názvy barev (red, white, blue, green, yellow, pink, purple, colorful, brown).",
     "allowedCombinations": [
       {
         "sukne": "red",
         "fjertuch": "colorful",
         "satek": "white",
         "pantle": "red",
-        "name": "Tradiční slavnostní"
+        "name": "Tradiční slavnostní",
+        "description": "Červená sukně s barevným fjerťuchem a bílým šátkem"
       },
       {
         "sukne": "white",
         "fjertuch": "blue",
         "satek": "blue",
         "pantle": "blue",
-        "name": "Modrá varianta"
+        "name": "Modrá varianta",
+        "description": "Bílá sukně s modrými doplňky"
       },
       {
         "sukne": "yellow",
         "fjertuch": "green",
         "satek": "white",
         "pantle": "green",
-        "name": "Jarní kombinace"
+        "name": "Jarní kombinace",
+        "description": "Žlutá sukně se zelenými doplňky"
+      },
+      {
+        "sukne": "white",
+        "fjertuch": "pink",
+        "satek": "pink",
+        "pantle": "red",
+        "name": "Růžová elegance",
+        "description": "Bílá sukně s růžovými odstíny"
+      },
+      {
+        "sukne": "red",
+        "fjertuch": "blue",
+        "satek": "white",
+        "pantle": "blue",
+        "name": "Červeno-modrá",
+        "description": "Červená sukně s modrým fjerťuchem"
       }
     ]
   },
@@ -30,13 +49,15 @@
       "Výborně! Tato kombinace je tradičně správná! 🎉",
       "Skvělá práce! Kroj je dokonale sladěný! 👏",
       "Perfektní! Takto by kroj nosily pravé Chodky! ✨",
-      "Úžasné! Barvy spolu krásně ladí! 🌟"
+      "Úžasné! Barvy spolu krásně ladí! 🌟",
+      "Hurá! To je nádherná kombinace! 🎊"
     ],
     "error": [
       "Och! Tato kombinace není úplně tradičně správná. Zkuste to znovu! 🤔",
       "Hmm... Babičky by tuto kombinaci asi nenosily. Zkusíme to jinak? 😊",
       "Skoro to bylo! Ale tyto barvy spolu úplně neladí. 🎨",
-      "Tahle kombinace není podle tradičních pravidel. Ještě jednou! 💪"
+      "Tahle kombinace není podle tradičních pravidel. Ještě jednou! 💪",
+      "Ejhle! Takhle to nebude. Zkuste jinou barevnou kombinaci! 🧐"
     ],
     "incomplete": "Nejdříve vyberte všechny části kroje (sukně, fjertuch, šátek i pantle)."
   }
