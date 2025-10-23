@@ -1,0 +1,43 @@
+{
+  "validationRules": {
+    "comment": "Pravidla pro vyhodnocení barevných kombinací - můžete upravit podle tradičních pravidel",
+    "allowedCombinations": [
+      {
+        "sukne": "red",
+        "fjertuch": "colorful",
+        "satek": "white",
+        "pantle": "red",
+        "name": "Tradiční slavnostní"
+      },
+      {
+        "sukne": "white",
+        "fjertuch": "blue",
+        "satek": "blue",
+        "pantle": "blue",
+        "name": "Modrá varianta"
+      },
+      {
+        "sukne": "yellow",
+        "fjertuch": "green",
+        "satek": "white",
+        "pantle": "green",
+        "name": "Jarní kombinace"
+      }
+    ]
+  },
+  "messages": {
+    "success": [
+      "Výborně! Tato kombinace je tradičně správná! 🎉",
+      "Skvělá práce! Kroj je dokonale sladěný! 👏",
+      "Perfektní! Takto by kroj nosily pravé Chodky! ✨",
+      "Úžasné! Barvy spolu krásně ladí! 🌟"
+    ],
+    "error": [
+      "Och! Tato kombinace není úplně tradičně správná. Zkuste to znovu! 🤔",
+      "Hmm... Babičky by tuto kombinaci asi nenosily. Zkusíme to jinak? 😊",
+      "Skoro to bylo! Ale tyto barvy spolu úplně neladí. 🎨",
+      "Tahle kombinace není podle tradičních pravidel. Ještě jednou! 💪"
+    ],
+    "incomplete": "Nejdříve vyberte všechny části kroje (sukně, fjertuch, šátek i pantle)."
+  }
+}
