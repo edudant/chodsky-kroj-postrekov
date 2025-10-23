@@ -59,17 +59,19 @@ export default function PartGallery({ partName, variants, selectedVariant, onSel
             }}
             data-testid={`card-variant-${variant.id}`}
           >
-            <div className="aspect-square bg-muted rounded-md overflow-hidden mb-2 relative group">
-              <img 
-                src={variant.image} 
-                alt={variant.name}
-                className="w-full h-full object-cover"
-                data-testid={`img-variant-${variant.id}`}
-              />
+            <div className="aspect-square bg-muted rounded-md mb-2 relative group overflow-visible">
+              <div className="absolute inset-0 rounded-md overflow-hidden">
+                <img 
+                  src={variant.image} 
+                  alt={variant.name}
+                  className="w-full h-full object-cover"
+                  data-testid={`img-variant-${variant.id}`}
+                />
+              </div>
               <Button
                 variant="secondary"
                 size="icon"
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 shadow-lg"
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 shadow-lg z-10"
                 onClick={(e) => handleZoomOpen(index, e)}
                 data-testid={`button-zoom-${variant.id}`}
               >
