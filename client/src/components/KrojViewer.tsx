@@ -45,8 +45,8 @@ export default function KrojViewer({ onPartClick, selectedPart, colors, mainImag
             y="5"
             width="50"
             height="15"
-            fill={colors.satek || 'transparent'}
-            opacity={colors.satek ? 0.6 : hoveredPart === 'satek' ? 0.3 : 0}
+            fill={colors.satek || 'hsl(var(--accent))'}
+            opacity={colors.satek ? 0.8 : hoveredPart === 'satek' ? 0.2 : 0}
             className="cursor-pointer transition-opacity duration-300"
             onClick={() => onPartClick('satek')}
             onMouseEnter={() => setHoveredPart('satek')}
@@ -62,8 +62,8 @@ export default function KrojViewer({ onPartClick, selectedPart, colors, mainImag
             y="35"
             width="40"
             height="35"
-            fill={colors.fjertuch || 'transparent'}
-            opacity={colors.fjertuch ? 0.6 : hoveredPart === 'fjertuch' ? 0.3 : 0}
+            fill={colors.fjertuch || 'hsl(var(--accent))'}
+            opacity={colors.fjertuch ? 0.8 : hoveredPart === 'fjertuch' ? 0.2 : 0}
             className="cursor-pointer transition-opacity duration-300"
             onClick={() => onPartClick('fjertuch')}
             onMouseEnter={() => setHoveredPart('fjertuch')}
@@ -79,8 +79,8 @@ export default function KrojViewer({ onPartClick, selectedPart, colors, mainImag
             y="70"
             width="60"
             height="28"
-            fill={colors.sukne || 'transparent'}
-            opacity={colors.sukne ? 0.6 : hoveredPart === 'sukne' ? 0.3 : 0}
+            fill={colors.sukne || 'hsl(var(--accent))'}
+            opacity={colors.sukne ? 0.8 : hoveredPart === 'sukne' ? 0.2 : 0}
             className="cursor-pointer transition-opacity duration-300"
             onClick={() => onPartClick('sukne')}
             onMouseEnter={() => setHoveredPart('sukne')}
@@ -96,8 +96,8 @@ export default function KrojViewer({ onPartClick, selectedPart, colors, mainImag
             y="50"
             width="8"
             height="25"
-            fill={colors.pantle || 'transparent'}
-            opacity={colors.pantle ? 0.6 : hoveredPart === 'pantle' ? 0.3 : 0}
+            fill={colors.pantle || 'hsl(var(--accent))'}
+            opacity={colors.pantle ? 0.8 : hoveredPart === 'pantle' ? 0.2 : 0}
             className="cursor-pointer transition-opacity duration-300"
             onClick={() => onPartClick('pantle')}
             onMouseEnter={() => setHoveredPart('pantle')}
@@ -111,8 +111,8 @@ export default function KrojViewer({ onPartClick, selectedPart, colors, mainImag
             y="50"
             width="8"
             height="25"
-            fill={colors.pantle || 'transparent'}
-            opacity={colors.pantle ? 0.6 : hoveredPart === 'pantle' ? 0.3 : 0}
+            fill={colors.pantle || 'hsl(var(--accent))'}
+            opacity={colors.pantle ? 0.8 : hoveredPart === 'pantle' ? 0.2 : 0}
             className="cursor-pointer transition-opacity duration-300"
             onClick={() => onPartClick('pantle')}
             onMouseEnter={() => setHoveredPart('pantle')}

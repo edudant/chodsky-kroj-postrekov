@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import KrojViewer from '@/components/KrojViewer';
 import PartGallery from '@/components/PartGallery';
@@ -6,24 +6,7 @@ import ValidationDialog from '@/components/ValidationDialog';
 import { extractDominantColor, colorToString } from '@/lib/colorExtractor';
 import { useToast } from '@/hooks/use-toast';
 
-import mainKrojImage from '@assets/generated_images/Complete_Chodsky_kroj_costume_13ff6bfe.png';
-
-import redSkirt from '@assets/generated_images/Red_folk_skirt_sukne_48d80be5.png';
-import whiteSkirt from '@assets/generated_images/White_folk_skirt_sukne_8fe64c83.png';
-import yellowSkirt from '@assets/generated_images/Yellow_folk_skirt_sukne_93045108.png';
-
-import blueApron from '@assets/generated_images/Blue_folk_apron_fjertuch_97f199e3.png';
-import colorfulApron from '@assets/generated_images/Colorful_folk_apron_fjertuch_91108a22.png';
-import pinkApron from '@assets/generated_images/Pink_folk_apron_fjertuch_49f709eb.png';
-import greenApron from '@assets/generated_images/Green_folk_apron_fjertuch_78ba503e.png';
-
-import redScarf from '@assets/generated_images/Red_folk_headscarf_satek_fecc55f0.png';
-import whiteScarf from '@assets/generated_images/White_folk_headscarf_satek_c58a89c2.png';
-import blueScarf from '@assets/generated_images/Blue_folk_headscarf_satek_aa461409.png';
-
-import greenRibbons from '@assets/generated_images/Green_folk_ribbons_pantle_6f42c6a1.png';
-import redRibbons from '@assets/generated_images/Red_folk_ribbons_pantle_8fc02f54.png';
-import blueRibbons from '@assets/generated_images/Blue_folk_ribbons_pantle_90325cae.png';
+import mainKrojImage from '@assets/generated_images/Line_drawing_of_kroj_a084977a.png';
 
 type PartId = 'sukne' | 'fjertuch' | 'satek' | 'pantle';
 
@@ -36,25 +19,38 @@ interface PartVariant {
 
 const variants: Record<PartId, PartVariant[]> = {
   sukne: [
-    { id: 'sukne_red', name: 'Červená', image: redSkirt, dominantColor: '#dc2626' },
-    { id: 'sukne_white', name: 'Bílá', image: whiteSkirt, dominantColor: '#ffffff' },
-    { id: 'sukne_yellow', name: 'Žlutá', image: yellowSkirt, dominantColor: '#eab308' },
+    { id: 'sukne_bila', name: 'Bílá', image: '/kroje/sukne_bila.jpeg', dominantColor: '#ffffff' },
+    { id: 'sukne_cervena', name: 'Červená', image: '/kroje/sukne_cervena.jpeg', dominantColor: '#dc2626' },
+    { id: 'sukne_zluta', name: 'Žlutá', image: '/kroje/sukne_zluta.jpeg', dominantColor: '#eab308' },
   ],
   fjertuch: [
-    { id: 'fjertuch_blue', name: 'Modrý', image: blueApron, dominantColor: '#3b82f6' },
-    { id: 'fjertuch_colorful', name: 'Barevný', image: colorfulApron, dominantColor: '#a855f7' },
-    { id: 'fjertuch_pink', name: 'Růžový', image: pinkApron, dominantColor: '#ec4899' },
-    { id: 'fjertuch_green', name: 'Zelený', image: greenApron, dominantColor: '#22c55e' },
+    { id: 'fjertuch_barevna', name: 'Barevný', image: '/kroje/fjertuch_barevna.jpeg', dominantColor: '#a855f7' },
+    { id: 'fjertuch_barevna_2', name: 'Barevný 2', image: '/kroje/fjertuch_barevna_2.jpeg', dominantColor: '#ec4899' },
+    { id: 'fjertuch_cervena', name: 'Červený', image: '/kroje/fjertuch_cervena.jpeg', dominantColor: '#dc2626' },
+    { id: 'fjertuch_fialova', name: 'Fialový', image: '/kroje/fjertuch_fialova.jpeg', dominantColor: '#a855f7' },
+    { id: 'fjertuch_fialova_2', name: 'Fialový 2', image: '/kroje/fjertuch_fialova_2.jpeg', dominantColor: '#9333ea' },
+    { id: 'fjertuch_hneda', name: 'Hnědý', image: '/kroje/fjertuch_hneda.jpeg', dominantColor: '#92400e' },
+    { id: 'fjertuch_modra', name: 'Modrý', image: '/kroje/fjertuch_modra.jpeg', dominantColor: '#3b82f6' },
+    { id: 'fjertuch_ruzova', name: 'Růžový', image: '/kroje/fjertuch_ruzova.jpeg', dominantColor: '#ec4899' },
+    { id: 'fjertuch_ruzova_2', name: 'Růžový 2', image: '/kroje/fjertuch_ruzova_2.jpeg', dominantColor: '#db2777' },
+    { id: 'fjertuch_ruzova_3', name: 'Růžový 3', image: '/kroje/fjertuch_ruzova_3.jpeg', dominantColor: '#be185d' },
+    { id: 'fjertuch_zelena', name: 'Zelený', image: '/kroje/fjertuch_zelena.jpeg', dominantColor: '#22c55e' },
+    { id: 'fjertuch_zelena_2', name: 'Zelený 2', image: '/kroje/fjertuch_zelena_2.jpeg', dominantColor: '#16a34a' },
+    { id: 'fjertuch_zelena_3', name: 'Zelený 3', image: '/kroje/fjertuch_zelena_3.jpeg', dominantColor: '#15803d' },
   ],
   satek: [
-    { id: 'satek_red', name: 'Červený', image: redScarf, dominantColor: '#dc2626' },
-    { id: 'satek_white', name: 'Bílý', image: whiteScarf, dominantColor: '#ffffff' },
-    { id: 'satek_blue', name: 'Modrý', image: blueScarf, dominantColor: '#3b82f6' },
+    { id: 'satek_bila', name: 'Bílý', image: '/kroje/satek_bila.jpeg', dominantColor: '#ffffff' },
+    { id: 'satek_cervena', name: 'Červený', image: '/kroje/satek_cervena.jpeg', dominantColor: '#dc2626' },
+    { id: 'satek_modra', name: 'Modrý', image: '/kroje/satek_modra.jpeg', dominantColor: '#3b82f6' },
+    { id: 'satek_modra_2', name: 'Modrý 2', image: '/kroje/satek_modra_2.jpeg', dominantColor: '#2563eb' },
+    { id: 'satek_ruzova', name: 'Růžový', image: '/kroje/satek_ruzova.jpeg', dominantColor: '#ec4899' },
+    { id: 'satek_zelena', name: 'Zelený', image: '/kroje/satek_zelena.jpeg', dominantColor: '#22c55e' },
   ],
   pantle: [
-    { id: 'pantle_green', name: 'Zelené', image: greenRibbons, dominantColor: '#22c55e' },
-    { id: 'pantle_red', name: 'Červené', image: redRibbons, dominantColor: '#dc2626' },
-    { id: 'pantle_blue', name: 'Modré', image: blueRibbons, dominantColor: '#3b82f6' },
+    { id: 'pantle_bila', name: 'Bílé', image: '/kroje/pantle_bila.jpeg', dominantColor: '#ffffff' },
+    { id: 'pantle_cervena', name: 'Červené', image: '/kroje/pantle_cervena.jpeg', dominantColor: '#dc2626' },
+    { id: 'pantle_modra', name: 'Modré', image: '/kroje/pantle_modra.jpeg', dominantColor: '#3b82f6' },
+    { id: 'pantle_zelena', name: 'Zelené', image: '/kroje/pantle_zelena.jpeg', dominantColor: '#22c55e' },
   ],
 };
 

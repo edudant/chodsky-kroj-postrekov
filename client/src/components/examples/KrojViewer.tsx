@@ -1,5 +1,5 @@
 import KrojViewer from '../KrojViewer';
-import mainKrojImage from '@assets/generated_images/Complete_Chodsky_kroj_costume_13ff6bfe.png';
+import mainKrojImage from '@assets/generated_images/Line_drawing_of_kroj_a084977a.png';
 
 export default function KrojViewerExample() {
   return (
