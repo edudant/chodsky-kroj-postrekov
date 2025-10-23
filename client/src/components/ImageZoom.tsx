@@ -62,39 +62,41 @@ export default function ImageZoom({
           </Button>
         </DialogHeader>
 
-        <div className="relative flex-1 flex items-center justify-center min-h-0 overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center p-12">
-            <img
-              src={imageSrc}
-              alt={imageName}
-              className="max-w-[90%] max-h-[90%] w-auto h-auto object-contain rounded-md shadow-lg"
-              data-testid="img-zoomed"
-            />
+        <div className="relative flex-1 flex items-center justify-center min-h-0 p-12">
+          <div className="flex items-center justify-center gap-4 w-full h-full">
+            {hasPrevious && (
+              <Button
+                variant="secondary"
+                size="icon"
+                className="h-12 w-12 rounded-full shadow-xl shrink-0"
+                onClick={handlePrevious}
+                data-testid="button-previous-image"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </Button>
+            )}
+
+            <div className="flex items-center justify-center flex-1 min-w-0 min-h-0">
+              <img
+                src={imageSrc}
+                alt={imageName}
+                className="max-w-full max-h-full w-auto h-auto object-contain rounded-md shadow-lg"
+                data-testid="img-zoomed"
+              />
+            </div>
+
+            {hasNext && (
+              <Button
+                variant="secondary"
+                size="icon"
+                className="h-12 w-12 rounded-full shadow-xl shrink-0"
+                onClick={handleNext}
+                data-testid="button-next-image"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </Button>
+            )}
           </div>
-
-          {hasPrevious && (
-            <Button
-              variant="secondary"
-              size="icon"
-              className="absolute left-8 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full shadow-xl z-10"
-              onClick={handlePrevious}
-              data-testid="button-previous-image"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </Button>
-          )}
-
-          {hasNext && (
-            <Button
-              variant="secondary"
-              size="icon"
-              className="absolute right-8 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full shadow-xl z-10"
-              onClick={handleNext}
-              data-testid="button-next-image"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </Button>
-          )}
         </div>
 
         {images && currentIndex !== undefined && (
