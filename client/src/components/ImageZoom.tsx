@@ -44,10 +44,10 @@ export default function ImageZoom({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-5xl w-[95vw] h-[90vh] p-0 bg-background/95 backdrop-blur-sm"
+        className="max-w-6xl w-[95vw] h-[95vh] p-0 bg-background/95 backdrop-blur-sm flex flex-col"
         data-testid="dialog-image-zoom"
       >
-        <DialogHeader className="px-6 py-4 border-b">
+        <DialogHeader className="px-6 py-4 border-b shrink-0">
           <DialogTitle className="text-lg font-serif" data-testid="text-zoom-title">
             {imageName}
           </DialogTitle>
@@ -62,19 +62,21 @@ export default function ImageZoom({
           </Button>
         </DialogHeader>
 
-        <div className="relative flex-1 flex items-center justify-center p-6">
-          <img
-            src={imageSrc}
-            alt={imageName}
-            className="max-w-full max-h-full object-contain rounded-md"
-            data-testid="img-zoomed"
-          />
+        <div className="relative flex-1 flex items-center justify-center min-h-0 overflow-hidden">
+          <div className="absolute inset-0 flex items-center justify-center p-12">
+            <img
+              src={imageSrc}
+              alt={imageName}
+              className="max-w-[90%] max-h-[90%] w-auto h-auto object-contain rounded-md shadow-lg"
+              data-testid="img-zoomed"
+            />
+          </div>
 
           {hasPrevious && (
             <Button
               variant="secondary"
               size="icon"
-              className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full shadow-lg"
+              className="absolute left-8 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full shadow-xl z-10"
               onClick={handlePrevious}
               data-testid="button-previous-image"
             >
@@ -86,7 +88,7 @@ export default function ImageZoom({
             <Button
               variant="secondary"
               size="icon"
-              className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full shadow-lg"
+              className="absolute right-8 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full shadow-xl z-10"
               onClick={handleNext}
               data-testid="button-next-image"
             >
@@ -96,7 +98,7 @@ export default function ImageZoom({
         </div>
 
         {images && currentIndex !== undefined && (
-          <div className="px-6 py-3 border-t bg-muted/30 text-center text-sm text-muted-foreground">
+          <div className="px-6 py-3 border-t bg-muted/30 text-center text-sm text-muted-foreground shrink-0">
             {currentIndex + 1} / {images.length}
           </div>
         )}
