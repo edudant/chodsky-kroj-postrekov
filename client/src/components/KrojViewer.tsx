@@ -1,156 +1,113 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card } from '@/components/ui/card';
+import { replaceColors } from '@/lib/colorReplacer';
 
-interface KrojPart {
-  id: 'sukne' | 'fjertuch' | 'satek' | 'pantle';
-  name: string;
-  color?: string;
-}
+type PartId = 'sukne' | 'fjertuch' | 'satek' | 'pantle';
 
 interface KrojViewerProps {
-  onPartClick: (partId: KrojPart['id']) => void;
-  selectedPart: KrojPart['id'] | null;
+  onPartClick: (partId: PartId) => void;
+  selectedPart: PartId | null;
   colors: Record<string, string>;
-  mainImage: string;
 }
 
-export default function KrojViewer({ onPartClick, selectedPart, colors, mainImage }: KrojViewerProps) {
-  const [hoveredPart, setHoveredPart] = useState<KrojPart['id'] | null>(null);
+export default function KrojViewer({ onPartClick, selectedPart, colors }: KrojViewerProps) {
+  const [processedImage, setProcessedImage] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
+  const sourceImageRef = useRef<HTMLImageElement | null>(null);
 
-  const parts: KrojPart[] = [
-    { id: 'satek', name: 'Šátek' },
-    { id: 'fjertuch', name: 'Fjertuch' },
-    { id: 'sukne', name: 'Sukně' },
-    { id: 'pantle', name: 'Pantle' },
-  ];
+  useEffect(() => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = '/kroj-sablona.jpg';
+    img.onload = () => {
+      sourceImageRef.current = img;
+      setProcessedImage(img.src);
+      setIsLoading(false);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!sourceImageRef.current || isLoading) return;
+    
+    const hasAnyColor = Object.values(colors).some(c => c);
+    if (!hasAnyColor) {
+      setProcessedImage(sourceImageRef.current.src);
+      return;
+    }
+
+    replaceColors(sourceImageRef.current, colors).then(dataUrl => {
+      if (dataUrl) {
+        setProcessedImage(dataUrl);
+      }
+    });
+  }, [colors, isLoading]);
 
   return (
-    <Card className="p-6">
+    <Card className="p-4 bg-card">
       <div className="relative">
         <img 
-          src={mainImage} 
-          alt="Chodský kroj" 
+          src={processedImage}
+          alt="Chodský kroj"
           className="w-full h-auto rounded-md"
           data-testid="img-main-kroj"
         />
         
         <svg 
-          className="absolute inset-0 w-full h-full" 
-          viewBox="0 0 100 100" 
-          preserveAspectRatio="none"
+          className="absolute inset-0 w-full h-full pointer-events-none" 
+          viewBox="0 0 1000 1400"
+          preserveAspectRatio="xMidYMid meet"
         >
-          {/* Šátek - upper region */}
-          <rect
-            x="25"
-            y="5"
-            width="50"
-            height="15"
-            fill={colors.satek || 'hsl(var(--accent))'}
-            opacity={colors.satek ? 0.8 : hoveredPart === 'satek' ? 0.2 : 0}
-            className="cursor-pointer transition-opacity duration-300"
-            onClick={() => onPartClick('satek')}
-            onMouseEnter={() => setHoveredPart('satek')}
-            onMouseLeave={() => setHoveredPart(null)}
-            stroke={selectedPart === 'satek' ? 'hsl(var(--primary))' : 'none'}
-            strokeWidth={selectedPart === 'satek' ? '1' : '0'}
-            data-testid="region-satek"
-          />
-
-          {/* Fjertuch - mid-upper region */}
-          <rect
-            x="30"
-            y="35"
-            width="40"
-            height="35"
-            fill={colors.fjertuch || 'hsl(var(--accent))'}
-            opacity={colors.fjertuch ? 0.8 : hoveredPart === 'fjertuch' ? 0.2 : 0}
-            className="cursor-pointer transition-opacity duration-300"
-            onClick={() => onPartClick('fjertuch')}
-            onMouseEnter={() => setHoveredPart('fjertuch')}
-            onMouseLeave={() => setHoveredPart(null)}
-            stroke={selectedPart === 'fjertuch' ? 'hsl(var(--primary))' : 'none'}
-            strokeWidth={selectedPart === 'fjertuch' ? '1' : '0'}
-            data-testid="region-fjertuch"
-          />
-
-          {/* Sukně - lower region */}
-          <rect
-            x="20"
-            y="70"
-            width="60"
-            height="28"
-            fill={colors.sukne || 'hsl(var(--accent))'}
-            opacity={colors.sukne ? 0.8 : hoveredPart === 'sukne' ? 0.2 : 0}
-            className="cursor-pointer transition-opacity duration-300"
+          <rect 
+            x="50" y="850" width="200" height="400"
+            fill="transparent"
+            className="cursor-pointer hover:fill-primary/10 transition-colors pointer-events-auto"
             onClick={() => onPartClick('sukne')}
-            onMouseEnter={() => setHoveredPart('sukne')}
-            onMouseLeave={() => setHoveredPart(null)}
-            stroke={selectedPart === 'sukne' ? 'hsl(var(--primary))' : 'none'}
-            strokeWidth={selectedPart === 'sukne' ? '1' : '0'}
             data-testid="region-sukne"
           />
-
-          {/* Pantle - mid-side regions */}
-          <rect
-            x="22"
-            y="50"
-            width="8"
-            height="25"
-            fill={colors.pantle || 'hsl(var(--accent))'}
-            opacity={colors.pantle ? 0.8 : hoveredPart === 'pantle' ? 0.2 : 0}
-            className="cursor-pointer transition-opacity duration-300"
-            onClick={() => onPartClick('pantle')}
-            onMouseEnter={() => setHoveredPart('pantle')}
-            onMouseLeave={() => setHoveredPart(null)}
-            stroke={selectedPart === 'pantle' ? 'hsl(var(--primary))' : 'none'}
-            strokeWidth={selectedPart === 'pantle' ? '1' : '0'}
-            data-testid="region-pantle-left"
+          
+          <rect 
+            x="300" y="700" width="450" height="550"
+            fill="transparent"
+            className="cursor-pointer hover:fill-primary/10 transition-colors pointer-events-auto"
+            onClick={() => onPartClick('fjertuch')}
+            data-testid="region-fjertuch"
           />
-          <rect
-            x="70"
-            y="50"
-            width="8"
-            height="25"
-            fill={colors.pantle || 'hsl(var(--accent))'}
-            opacity={colors.pantle ? 0.8 : hoveredPart === 'pantle' ? 0.2 : 0}
-            className="cursor-pointer transition-opacity duration-300"
+          
+          <rect 
+            x="250" y="100" width="500" height="400"
+            fill="transparent"
+            className="cursor-pointer hover:fill-primary/10 transition-colors pointer-events-auto"
+            onClick={() => onPartClick('satek')}
+            data-testid="region-satek"
+          />
+          
+          <rect 
+            x="620" y="550" width="80" height="100"
+            fill="transparent"
+            className="cursor-pointer hover:fill-primary/10 transition-colors pointer-events-auto"
             onClick={() => onPartClick('pantle')}
-            onMouseEnter={() => setHoveredPart('pantle')}
-            onMouseLeave={() => setHoveredPart(null)}
-            stroke={selectedPart === 'pantle' ? 'hsl(var(--primary))' : 'none'}
-            strokeWidth={selectedPart === 'pantle' ? '1' : '0'}
             data-testid="region-pantle-right"
           />
         </svg>
-
-        {hoveredPart && (
-          <div className="absolute top-2 left-2 bg-background/90 px-3 py-1 rounded-md text-sm font-medium backdrop-blur-sm">
-            {parts.find(p => p.id === hoveredPart)?.name}
-          </div>
-        )}
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-        {parts.map(part => (
-          <div 
-            key={part.id}
-            className={`flex items-center gap-2 p-2 rounded-md transition-colors ${
-              selectedPart === part.id ? 'bg-primary/10 ring-2 ring-primary' : ''
-            }`}
-            data-testid={`indicator-${part.id}`}
-          >
-            <div 
-              className="w-4 h-4 rounded-sm border-2"
-              style={{ 
-                backgroundColor: colors[part.id] || 'transparent',
-                borderColor: colors[part.id] ? colors[part.id] : 'hsl(var(--border))'
-              }}
-            />
-            <span className={colors[part.id] ? 'font-medium' : 'text-muted-foreground'}>
-              {part.name}
-            </span>
-          </div>
-        ))}
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded border" style={{ backgroundColor: colors.sukne || '#ccc' }}></div>
+          <span className={selectedPart === 'sukne' ? 'font-bold text-primary' : ''}>Sukně</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded border" style={{ backgroundColor: colors.fjertuch || '#ccc' }}></div>
+          <span className={selectedPart === 'fjertuch' ? 'font-bold text-primary' : ''}>Fjertuch</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded border" style={{ backgroundColor: colors.satek || '#ccc' }}></div>
+          <span className={selectedPart === 'satek' ? 'font-bold text-primary' : ''}>Šátek</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded border" style={{ backgroundColor: colors.pantle || '#ccc' }}></div>
+          <span className={selectedPart === 'pantle' ? 'font-bold text-primary' : ''}>Pantle</span>
+        </div>
       </div>
     </Card>
   );

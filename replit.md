@@ -17,6 +17,7 @@ Interaktivní webová aplikace pro poznávání a sestavování barevných kombi
 ### Technická implementace
 - **Frontend**: React, TypeScript, Tailwind CSS, shadcn/ui komponenty
 - **Detekce barev**: Canvas API s bucketing algoritmem pro robustní detekci dominantní barvy
+- **Nahrazování barev**: HSL color range matching - nahrazuje konkrétní barvy v definovaných oblastech obrázku
 - **Konfigurace**: JSON soubor s pravidly pro barevné kombinace a zpětnovazebními hláškami
 - **Design**: Kulturně autentický design s teplou paletou inspirovanou chodským folklorem
 
@@ -34,7 +35,7 @@ Interaktivní webová aplikace pro poznávání a sestavování barevných kombi
 #### Statické soubory
 - `public/kroje/` - Adresář s fotografiemi jednotlivých částí kroje (staženo z původního prototypu)
 - `public/kroj-config.json` - Konfigurační soubor s pravidly validace a hláškami
-- `attached_assets/generated_images/Line_drawing_of_kroj_a084977a.png` - Kresbový obrázek kroje
+- `public/kroj-sablona.jpg` - Realistický obrázek kroje používaný jako šablona pro nahrazování barev
 
 #### Konfigurace
 - `design_guidelines.md` - Designové směrnice s barevnou paletou a typografií
@@ -164,7 +165,30 @@ Možná rozšíření aplikace:
 
 ## Poznámky k vývoji
 
+### Nahrazování barev
+Aplikace používá pokročilý systém nahrazování barev založený na HSL color range matching:
+
+1. **Definice oblastí** (`colorReplacer.ts`):
+   - Každá část kroje má definovaný HSL rozsah původní barvy
+   - Šátek (bílá/krémová): H:0-60°, S:0-20%, L:80-100%
+   - Fjertuch (zelená): H:80-160°, S:30-100%, L:30-70%
+   - Sukně (červená): H:340-20°, S:40-100%, L:25-60%
+   - Pantle (žlutá): H:40-65°, S:60-100%, L:45-75%
+
+2. **Proces nahrazování**:
+   - Načte se šablona obrázku kroje (`/kroj-sablona.jpg`)
+   - Při výběru varianty se detekuje její dominantní barva
+   - Algoritmus projde každý pixel obrázku
+   - Pixely odpovídající HSL rozsahu dané části se nahradí novou barvou
+   - Zachovává se světlost (L) pixelu pro realističtější efekt
+   - Vrací se data URL zpracovaného obrázku
+
+3. **Optimalizace**:
+   - Canvas API s `willReadFrequently` příznakem
+   - Bucketing algoritmus pro rychlejší detekci dominantní barvy
+   - Vyloučení příliš světlých a tmavých pixelů
+
+### Další poznámky
 - Fotografie součástí jsou staženy z původního prototypu na https://edudant.github.io/chodsky-kroj/
-- Kresbový obrázek kroje je vygenerován pomocí AI pro čistou vizualizaci
-- Detekce barev používá bucketing algoritmus pro robustnější rozpoznávání než průměrování RGB hodnot
-- Aplikace je optimalizována pro rychlé načítání pomocí zmenšených náhledů
+- Šablona kroje je realistická fotografie pro autentičtější vizualizaci
+- Aplikace je optimalizována pro rychlé načítání pomocí zmenšených náhledů v galeriích

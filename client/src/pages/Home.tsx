@@ -6,7 +6,6 @@ import ValidationDialog from '@/components/ValidationDialog';
 import { extractDominantColor, colorToString } from '@/lib/colorExtractor';
 import { useToast } from '@/hooks/use-toast';
 
-import mainKrojImage from '@assets/generated_images/Line_drawing_of_kroj_a084977a.png';
 
 type PartId = 'sukne' | 'fjertuch' | 'satek' | 'pantle';
 
@@ -157,7 +156,6 @@ export default function Home() {
               onPartClick={handlePartClick}
               selectedPart={selectedPart}
               colors={colors}
-              mainImage={mainKrojImage}
             />
             
             <Button 
