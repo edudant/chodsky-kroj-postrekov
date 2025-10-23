@@ -169,18 +169,20 @@ Možná rozšíření aplikace:
 Aplikace používá pokročilý systém nahrazování barev založený na HSL color range matching:
 
 1. **Definice oblastí** (`colorReplacer.ts`):
-   - Každá část kroje má definovaný HSL rozsah původní barvy
-   - Šátek (bílá/krémová): H:0-60°, S:0-20%, L:80-100%
-   - Fjertuch (zelená): H:80-160°, S:30-100%, L:30-70%
-   - Sukně (červená): H:340-20°, S:40-100%, L:25-60%
-   - Pantle (žlutá): H:40-65°, S:60-100%, L:45-75%
+   - Každá část kroje má definovaný HSL rozsah původní barvy na fotografii
+   - **Šátek** (béžová na krku): H:25-50°, S:15-65%, L:55-85%
+   - **Fjertuch** (zelená zástěra): H:80-160°, S:20-100%, L:15-75%
+   - **Sukně** (červená sukně vlevo): H:340-20°, S:35-100%, L:25-75%
+   - **Pantle** (červený pásek u pasu): H:345-15°, S:50-100%, L:35-65%
 
 2. **Proces nahrazování**:
    - Načte se šablona obrázku kroje (`/kroj-sablona.jpg`)
    - Při výběru varianty se detekuje její dominantní barva
    - Algoritmus projde každý pixel obrázku
    - Pixely odpovídající HSL rozsahu dané části se nahradí novou barvou
-   - Zachovává se světlost (L) pixelu pro realističtější efekt
+   - Pro světlejší pixely (L ≥ 50) se zachovává původní světlost
+   - Pro tmavší pixely (L < 50) se používá tmavší varianta nahrazované barvy
+   - Pro velmi tmavé pixely (L < 30) se používá max 50% světlosti cílové barvy
    - Vrací se data URL zpracovaného obrázku
 
 3. **Optimalizace**:

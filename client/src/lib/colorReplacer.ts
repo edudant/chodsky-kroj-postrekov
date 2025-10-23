@@ -16,12 +16,12 @@ export const krojParts: Record<string, KrojPart> = {
   satek: {
     name: 'Šátek',
     originalColorRange: {
-      hMin: 0,
-      hMax: 60,
-      sMin: 0,
-      sMax: 20,
-      lMin: 80,
-      lMax: 100,
+      hMin: 20,
+      hMax: 40,
+      sMin: 10,
+      sMax: 50,
+      lMin: 50,
+      lMax: 85,
     },
   },
   fjertuch: {
@@ -29,10 +29,10 @@ export const krojParts: Record<string, KrojPart> = {
     originalColorRange: {
       hMin: 80,
       hMax: 160,
-      sMin: 30,
+      sMin: 20,
       sMax: 100,
-      lMin: 30,
-      lMax: 70,
+      lMin: 15,
+      lMax: 75,
     },
   },
   sukne: {
@@ -40,21 +40,21 @@ export const krojParts: Record<string, KrojPart> = {
     originalColorRange: {
       hMin: 340,
       hMax: 20,
-      sMin: 40,
+      sMin: 30,
       sMax: 100,
-      lMin: 25,
-      lMax: 60,
+      lMin: 20,
+      lMax: 75,
     },
   },
   pantle: {
     name: 'Pantle',
     originalColorRange: {
-      hMin: 40,
-      hMax: 65,
-      sMin: 60,
+      hMin: 45,
+      hMax: 70,
+      sMin: 55,
       sMax: 100,
-      lMin: 45,
-      lMax: 75,
+      lMin: 40,
+      lMax: 85,
     },
   },
 };
@@ -179,7 +179,13 @@ export function replaceColors(
       
       for (const { range, targetHsl } of replacements) {
         if (isInColorRange(h, s, l, range)) {
-          const [newR, newG, newB] = hslToRgb(targetHsl[0], targetHsl[1], l);
+          const normalizedL = (l - range.lMin) / (range.lMax - range.lMin);
+          const targetVariance = 15;
+          const newL = Math.max(0, Math.min(100, 
+            targetHsl[2] + (normalizedL - 0.5) * targetVariance
+          ));
+          
+          const [newR, newG, newB] = hslToRgb(targetHsl[0], targetHsl[1], newL);
           data[i] = newR;
           data[i + 1] = newG;
           data[i + 2] = newB;

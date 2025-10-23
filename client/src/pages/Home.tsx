@@ -77,12 +77,7 @@ export default function Home() {
     
     const variant = variants[partId].find(v => v.id === variantId);
     if (variant) {
-      try {
-        const dominantColor = await extractDominantColor(variant.image);
-        setColors(prev => ({ ...prev, [partId]: dominantColor }));
-      } catch (error) {
-        setColors(prev => ({ ...prev, [partId]: variant.dominantColor }));
-      }
+      setColors(prev => ({ ...prev, [partId]: variant.dominantColor }));
     }
 
     toast({
