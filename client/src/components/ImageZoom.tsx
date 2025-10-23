@@ -12,7 +12,7 @@ interface ImageZoomProps {
   onOpenChange: (open: boolean) => void;
   imageSrc: string;
   imageName: string;
-  images?: { src: string; name: string }[];
+  images?: { src: string; name: string; shouldRotate?: boolean }[];
   currentIndex?: number;
   onNavigate?: (index: number) => void;
 }
@@ -80,7 +80,11 @@ export default function ImageZoom({
               <img
                 src={imageSrc}
                 alt={imageName}
-                className="max-w-full max-h-full w-auto h-auto object-contain rounded-md shadow-lg"
+                className={`max-w-full max-h-full w-auto h-auto object-contain rounded-md shadow-lg ${
+                  images && currentIndex !== undefined && images[currentIndex]?.shouldRotate
+                    ? 'rotate-90'
+                    : ''
+                }`}
                 data-testid="img-zoomed"
               />
             </div>

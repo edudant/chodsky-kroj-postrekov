@@ -9,6 +9,7 @@ interface PartVariant {
   name: string;
   image: string;
   dominantColor: string;
+  shouldRotate?: boolean;
 }
 
 interface PartGalleryProps {
@@ -32,7 +33,11 @@ export default function PartGallery({ partName, variants, selectedVariant, onSel
     setZoomIndex(index);
   };
 
-  const zoomImages = variants.map(v => ({ src: v.image, name: v.name }));
+  const zoomImages = variants.map(v => ({ 
+    src: v.image, 
+    name: v.name,
+    shouldRotate: v.shouldRotate
+  }));
 
   return (
     <div className="space-y-4">
@@ -59,12 +64,12 @@ export default function PartGallery({ partName, variants, selectedVariant, onSel
             }}
             data-testid={`card-variant-${variant.id}`}
           >
-            <div className="aspect-square bg-muted rounded-md mb-2 relative group overflow-visible">
+            <div className="aspect-square bg-muted rounded-md mb-2 relative group overflow-hidden">
               <div className="absolute inset-0 rounded-md overflow-hidden">
                 <img 
                   src={variant.image} 
                   alt={variant.name}
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full object-cover ${variant.shouldRotate ? 'rotate-90' : ''}`}
                   data-testid={`img-variant-${variant.id}`}
                 />
               </div>

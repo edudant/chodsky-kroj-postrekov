@@ -44,7 +44,7 @@ export default function KrojViewer({ onPartClick, selectedPart, colors }: KrojVi
 
   return (
     <Card className="p-4 bg-card">
-      <div className="relative">
+      <div className="relative max-w-md mx-auto">
         <img 
           src={processedImage}
           alt="Chodský kroj"
@@ -106,7 +106,7 @@ export default function KrojViewer({ onPartClick, selectedPart, colors }: KrojVi
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded border" style={{ backgroundColor: colors.pantle || '#ccc' }}></div>
-          <span className={selectedPart === 'pantle' ? 'font-bold text-primary' : ''}>Pantle</span>
+          <span className={selectedPart === 'pantle' ? 'font-bold text-primary' : ''}>Pantl</span>
         </div>
       </div>
     </Card>

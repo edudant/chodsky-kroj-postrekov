@@ -14,13 +14,21 @@ interface PartVariant {
   name: string;
   image: string;
   dominantColor: string;
+  shouldRotate?: boolean;
 }
+
+const partDisplayNames: Record<PartId, string> = {
+  sukne: 'Sukně',
+  fjertuch: 'Fjertuch',
+  satek: 'Šátek',
+  pantle: 'Pantl',
+};
 
 const variants: Record<PartId, PartVariant[]> = {
   sukne: [
-    { id: 'sukne_bila', name: 'Bílá', image: '/kroje/sukne_bila.jpeg', dominantColor: '#ffffff' },
-    { id: 'sukne_cervena', name: 'Červená', image: '/kroje/sukne_cervena.jpeg', dominantColor: '#dc2626' },
-    { id: 'sukne_zluta', name: 'Žlutá', image: '/kroje/sukne_zluta.jpeg', dominantColor: '#eab308' },
+    { id: 'sukne_bila', name: 'Bílá', image: '/kroje/sukne_bila.jpeg', dominantColor: '#ffffff', shouldRotate: true },
+    { id: 'sukne_cervena', name: 'Červená', image: '/kroje/sukne_cervena.jpeg', dominantColor: '#dc2626', shouldRotate: true },
+    { id: 'sukne_zluta', name: 'Žlutá', image: '/kroje/sukne_zluta.jpeg', dominantColor: '#eab308', shouldRotate: true },
   ],
   fjertuch: [
     { id: 'fjertuch_barevna', name: 'Barevný', image: '/kroje/fjertuch_barevna.jpeg', dominantColor: '#a855f7' },
@@ -46,10 +54,10 @@ const variants: Record<PartId, PartVariant[]> = {
     { id: 'satek_zelena', name: 'Zelený', image: '/kroje/satek_zelena.jpeg', dominantColor: '#22c55e' },
   ],
   pantle: [
-    { id: 'pantle_bila', name: 'Bílé', image: '/kroje/pantle_bila.jpeg', dominantColor: '#ffffff' },
-    { id: 'pantle_cervena', name: 'Červené', image: '/kroje/pantle_cervena.jpeg', dominantColor: '#dc2626' },
-    { id: 'pantle_modra', name: 'Modré', image: '/kroje/pantle_modra.jpeg', dominantColor: '#3b82f6' },
-    { id: 'pantle_zelena', name: 'Zelené', image: '/kroje/pantle_zelena.jpeg', dominantColor: '#22c55e' },
+    { id: 'pantle_bila', name: 'Bílé', image: '/kroje/pantle_bila.jpeg', dominantColor: '#ffffff', shouldRotate: true },
+    { id: 'pantle_cervena', name: 'Červené', image: '/kroje/pantle_cervena.jpeg', dominantColor: '#dc2626', shouldRotate: true },
+    { id: 'pantle_modra', name: 'Modré', image: '/kroje/pantle_modra.jpeg', dominantColor: '#3b82f6', shouldRotate: true },
+    { id: 'pantle_zelena', name: 'Zelené', image: '/kroje/pantle_zelena.jpeg', dominantColor: '#22c55e', shouldRotate: true },
   ],
 };
 
@@ -82,7 +90,7 @@ export default function Home() {
 
     toast({
       title: 'Varianta vybrána',
-      description: `${variant?.name} - ${partId}`,
+      description: `${variant?.name} - ${partDisplayNames[partId]}`,
     });
   };
 
@@ -92,7 +100,7 @@ export default function Home() {
     if (!allSelected) {
       setValidationResult({
         isValid: false,
-        message: 'Nejdříve vyberte všechny části kroje (sukně, fjertuch, šátek i pantle).'
+        message: 'Nejdříve vyberte všechny části kroje (sukně, fjertuch, šátek i pantl).'
       });
       setShowValidation(true);
       return;
@@ -136,10 +144,10 @@ export default function Home() {
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <h1 className="text-3xl md:text-4xl font-serif font-bold text-center text-foreground" data-testid="heading-main">
-            Sestavte si Chodský Kroj
+            Sestavte si: Chodský kroj
           </h1>
           <p className="text-center text-muted-foreground mt-2">
-            Vyberte barevné kombinace jednotlivých částí tradičního kroje
+            Víš které barvy k sobě patří?
           </p>
         </div>
       </header>
@@ -163,7 +171,25 @@ export default function Home() {
             </Button>
           </div>
 
-          <div className="space-y-12">
+          <div className="space-y-12 pb-12">
+            <div id="gallery-satek">
+              <PartGallery 
+                partName="Šátek"
+                variants={variants.satek}
+                selectedVariant={selections.satek}
+                onSelectVariant={(id) => handleSelectVariant('satek', id)}
+              />
+            </div>
+
+            <div id="gallery-pantle">
+              <PartGallery 
+                partName="Pantl"
+                variants={variants.pantle}
+                selectedVariant={selections.pantle}
+                onSelectVariant={(id) => handleSelectVariant('pantle', id)}
+              />
+            </div>
+
             <div id="gallery-sukne">
               <PartGallery 
                 partName="Sukně"
@@ -179,24 +205,6 @@ export default function Home() {
                 variants={variants.fjertuch}
                 selectedVariant={selections.fjertuch}
                 onSelectVariant={(id) => handleSelectVariant('fjertuch', id)}
-              />
-            </div>
-
-            <div id="gallery-satek">
-              <PartGallery 
-                partName="Šátek"
-                variants={variants.satek}
-                selectedVariant={selections.satek}
-                onSelectVariant={(id) => handleSelectVariant('satek', id)}
-              />
-            </div>
-
-            <div id="gallery-pantle">
-              <PartGallery 
-                partName="Pantle"
-                variants={variants.pantle}
-                selectedVariant={selections.pantle}
-                onSelectVariant={(id) => handleSelectVariant('pantle', id)}
               />
             </div>
           </div>
