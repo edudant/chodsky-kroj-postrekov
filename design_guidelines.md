@@ -58,7 +58,7 @@
 ## Component Library
 
 ### Navigation/Header
-- Simple top bar with logo/title "Sestavte si Chodský Kroj"
+- Simple top bar with logo/title "Sestav si Chodský Kroj"
 - Minimal navigation - this is a single-page application
 - Optional info button for cultural context/instructions
 

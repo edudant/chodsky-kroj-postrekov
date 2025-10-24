@@ -21,14 +21,17 @@ export const krojParts: Record<string, KrojPart> = {
   satek: {
     name: 'Šátek',
     originalColorRange: {
+      // Target whites→cream→beige→tan, avoid reds and greens
+      // Push to deeper tan: widen saturation a bit and allow lower lightness
+      // H ~20–58 (warm band), S 0–70, L 38–95
       hMin: 20,
-      hMax: 40,
-      sMin: 10,
-      sMax: 50,
-      lMin: 50,
-      lMax: 85,
+      hMax: 100,
+      sMin: 0,
+      sMax: 100,
+      lMin: 38,
+      lMax: 95,
     },
-    region: [[506, 269], [528, 288], [533, 303], [538, 329], [538, 354], [526, 370], [501, 385], [568, 461], [613, 514], [657, 544], [705, 569], [725, 543], [749, 522], [769, 496], [787, 456], [797, 432], [784, 388], [769, 394], [777, 421], [757, 440], [730, 463], [722, 477], [715, 508], [697, 517], [682, 478], [667, 437], [633, 428], [598, 409], [573, 355], [555, 328], [533, 290]],
+    region: [[509, 268], [536, 259], [604, 311], [658, 364], [646, 297], [666, 289], [708, 297], [785, 387], [793, 421], [790, 457], [780, 492], [745, 525], [726, 540], [708, 572], [631, 537], [571, 477], [494, 387], [522, 376], [536, 342], [529, 300], [522, 285]],
   },
   fjertuch: {
     name: 'Fjertuch',
@@ -45,27 +48,59 @@ export const krojParts: Record<string, KrojPart> = {
   sukne: {
     name: 'Sukně',
     originalColorRange: {
-      hMin: 340,
-      hMax: 20,
-      sMin: 30,
+      hMin: 0,
+      hMax: 360,
+      sMin: 0,
       sMax: 100,
-      lMin: 20,
-      lMax: 75,
+      lMin: 0,
+      lMax: 100,
     },
     region: [[351, 988], [354, 950], [354, 868], [356, 772], [371, 638], [394, 600], [359, 593], [327, 630], [264, 976]],
   },
   pantle: {
     name: 'Pantle',
     originalColorRange: {
-      hMin: 45,
-      hMax: 70,
-      sMin: 55,
+      hMin: 340,
+      hMax: 20,
+      sMin: 40,
       sMax: 100,
-      lMin: 40,
-      lMax: 85,
+      lMin: 25,
+      lMax: 75,
     },
     region: [[441, 514], [431, 536], [456, 545], [478, 535], [521, 529], [523, 520]],
   },
+};
+
+// Pomocné funkce pro práci s názvy souborů a výběr polygonu pro pantle
+function getFilenameKeyFromUrl(url: string): string {
+  try {
+    // Odstraň případný query string a fragment
+    const clean = url.split('?')[0].split('#')[0];
+    const parts = clean.split('/');
+    const filename = parts[parts.length - 1] || '';
+    // Bez přípony
+    return filename.replace(/\.[^.]+$/, '');
+  } catch {
+    return url;
+  }
+}
+
+function getPantleTextureRegionFromSrc(src: string): Region | undefined {
+  const key = getFilenameKeyFromUrl(src);
+  // Zkus přímý klíč
+  if (pantleTextureRegions[key]) return pantleTextureRegions[key];
+  // Heuristika: najdi klíč, který je podřetězcem názvu souboru
+  const matchKey = Object.keys(pantleTextureRegions).find(k => key.includes(k));
+  if (matchKey) return pantleTextureRegions[matchKey];
+  return undefined;
+}
+
+// Polygony pro výřez textury z obrázků pantlí
+export const pantleTextureRegions: Record<string, Region> = {
+  'pantle_cervena': [[245, 633], [508, 660], [475, 901], [185, 879]],
+  'pantle_modra': [[306, 909], [559, 921], [538, 1131], [283, 1124]],
+  'pantle_zelena': [[278, 742], [527, 761], [499, 999], [237, 972]],
+  'pantle_bila': [[296, 702], [537, 720], [509, 965], [259, 947]],
 };
 
 function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
@@ -196,6 +231,10 @@ export function replaceColors(
       if (part && hexColor) {
         const rgb = hexToRgb(hexColor);
         if (rgb) {
+          // Pokud je vybrána bílá pro šátek, přeskoč náhradu (ponech originál)
+          if (partKey === 'satek' && rgb.r >= 250 && rgb.g >= 250 && rgb.b >= 250) {
+            continue;
+          }
           const targetHsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
           replacements.push({ 
             range: part.originalColorRange, 
@@ -267,3 +306,262 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
       }
     : null;
 }
+
+// Nová funkce pro nahrazení textury v oblasti
+export function replaceWithTexture(
+  sourceImage: HTMLImageElement,
+  textureImages: Record<string, HTMLImageElement>
+): Promise<string> {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    
+    if (!ctx) {
+      resolve('');
+      return;
+    }
+
+    canvas.width = sourceImage.width;
+    canvas.height = sourceImage.height;
+    
+    // Nakresli základní obrázek
+    ctx.drawImage(sourceImage, 0, 0);
+    
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    // Měřítko mezi viewBox (1000x1400) a skutečnou velikostí obrázku
+    const scaleX = canvas.width / 1000;
+    const scaleY = canvas.height / 1400;
+
+    // Projdi každou část s texturou
+    for (const [partKey, textureImg] of Object.entries(textureImages)) {
+      const part = krojParts[partKey];
+      if (!part || !part.region || part.region.length === 0) continue;
+
+      const region = part.region;
+      const colorRange = part.originalColorRange;
+      
+      // Vytvoř dočasný canvas pro texturu
+      const texCanvas = document.createElement('canvas');
+      const texCtx = texCanvas.getContext('2d');
+      if (!texCtx) continue;
+      
+      // Najdi bounding box polygonu pro optimalizaci
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (const [px, py] of region) {
+        minX = Math.min(minX, px);
+        minY = Math.min(minY, py);
+        maxX = Math.max(maxX, px);
+        maxY = Math.max(maxY, py);
+      }
+      
+      const regionWidth = maxX - minX;
+      const regionHeight = maxY - minY;
+      
+  // Pro sukni: škáluj texturu na celou výšku regionu
+  // Pro pantle: vyřízni polygon z textury a otoč o 80°
+      // Pro ostatní části: použij tile pattern s max velikostí 200px
+      if (partKey === 'sukne') {
+        // Škáluj POUZE výšku na celou výšku regionu, šířku nech původní
+        const regionPixelHeight = Math.ceil(regionHeight * scaleY);
+        
+        texCanvas.width = textureImg.width;  // Původní šířka
+        texCanvas.height = regionPixelHeight; // Škálovaná výška
+        // Roztáhni texturu pouze vertikálně
+        texCtx.drawImage(textureImg, 0, 0, textureImg.width, textureImg.height, 0, 0, texCanvas.width, texCanvas.height);
+      } else if (partKey === 'pantle') {
+        // Pro pantle: vyřízni polygon z textury dle názvu souboru a otoč o ~80° doprava
+        const textureRegion = getPantleTextureRegionFromSrc(textureImg.src);
+        
+        if (textureRegion && textureRegion.length > 0) {
+          // Najdi bounding box polygonu v textuře
+          let texMinX = Infinity, texMinY = Infinity, texMaxX = -Infinity, texMaxY = -Infinity;
+          for (const [px, py] of textureRegion) {
+            texMinX = Math.min(texMinX, px);
+            texMinY = Math.min(texMinY, py);
+            texMaxX = Math.max(texMaxX, px);
+            texMaxY = Math.max(texMaxY, py);
+          }
+          
+          const texWidth = texMaxX - texMinX;
+          const texHeight = texMaxY - texMinY;
+          
+          // Vytvoř dočasný canvas pro výřez
+          const tempCanvas = document.createElement('canvas');
+          const tempCtx = tempCanvas.getContext('2d');
+          if (!tempCtx) continue;
+          
+          tempCanvas.width = texWidth;
+          tempCanvas.height = texHeight;
+          
+          // Vyřízni polygon z textury
+          tempCtx.drawImage(textureImg, texMinX, texMinY, texWidth, texHeight, 0, 0, texWidth, texHeight);
+          
+          // Vytvoř finální canvas s rotací 80° doprava
+          const angle = 80 * Math.PI / 180;
+          const cos = Math.abs(Math.cos(angle));
+          const sin = Math.abs(Math.sin(angle));
+          const rotatedWidth = Math.ceil(texHeight * sin + texWidth * cos);
+          const rotatedHeight = Math.ceil(texHeight * cos + texWidth * sin);
+          
+          // Nejprve vytvoř dočasné plátno pro otočený obraz
+          const rotatedCanvas = document.createElement('canvas');
+          const rotatedCtx = rotatedCanvas.getContext('2d');
+          if (!rotatedCtx) continue;
+          rotatedCanvas.width = rotatedWidth;
+          rotatedCanvas.height = rotatedHeight;
+          rotatedCtx.translate(rotatedWidth / 2, rotatedHeight / 2);
+          rotatedCtx.rotate(angle);
+          rotatedCtx.drawImage(tempCanvas, -texWidth / 2, -texHeight / 2);
+          rotatedCtx.setTransform(1, 0, 0, 1, 0, 0);
+
+          // Následně škáluj výšku otočené textury na výšku regionu pantle,
+          // šířku uprav proporcionálně (bez opakování vertikálně)
+          const regionPixelHeight = Math.ceil(regionHeight * scaleY);
+          const scale = regionPixelHeight / rotatedCanvas.height;
+          const scaledWidth = Math.max(1, Math.floor(rotatedCanvas.width * scale));
+          texCanvas.width = scaledWidth;
+          texCanvas.height = regionPixelHeight;
+          texCtx.drawImage(rotatedCanvas, 0, 0, rotatedCanvas.width, rotatedCanvas.height, 0, 0, texCanvas.width, texCanvas.height);
+        } else {
+          // Fallback: použij celou texturu otočenou o 80°
+          const angle = 80 * Math.PI / 180;
+          const cos = Math.abs(Math.cos(angle));
+          const sin = Math.abs(Math.sin(angle));
+          const rotatedWidth = Math.ceil(textureImg.height * sin + textureImg.width * cos);
+          const rotatedHeight = Math.ceil(textureImg.height * cos + textureImg.width * sin);
+          
+          // Otoč na dočasné plátno
+          const rotatedCanvas = document.createElement('canvas');
+          const rotatedCtx = rotatedCanvas.getContext('2d');
+          if (!rotatedCtx) continue;
+          rotatedCanvas.width = rotatedWidth;
+          rotatedCanvas.height = rotatedHeight;
+          rotatedCtx.translate(rotatedWidth / 2, rotatedHeight / 2);
+          rotatedCtx.rotate(angle);
+          rotatedCtx.drawImage(textureImg, -textureImg.width / 2, -textureImg.height / 2);
+          rotatedCtx.setTransform(1, 0, 0, 1, 0, 0);
+
+          // Přizpůsob výšku regionu pantle
+          const regionPixelHeight = Math.ceil(regionHeight * scaleY);
+          const scale = regionPixelHeight / rotatedCanvas.height;
+          const scaledWidth = Math.max(1, Math.floor(rotatedCanvas.width * scale));
+          texCanvas.width = scaledWidth;
+          texCanvas.height = regionPixelHeight;
+          texCtx.drawImage(rotatedCanvas, 0, 0, rotatedCanvas.width, rotatedCanvas.height, 0, 0, texCanvas.width, texCanvas.height);
+        }
+      } else {
+        // Pro ostatní části: škáluj texturu na rozumnou velikost
+        const maxTexSize = 200;
+        const texScale = Math.min(1, maxTexSize / Math.max(textureImg.width, textureImg.height));
+        
+        texCanvas.width = Math.floor(textureImg.width * texScale);
+        texCanvas.height = Math.floor(textureImg.height * texScale);
+        texCtx.drawImage(textureImg, 0, 0, texCanvas.width, texCanvas.height);
+      }
+      
+      const texImageData = texCtx.getImageData(0, 0, texCanvas.width, texCanvas.height);
+      const texData = texImageData.data;
+      
+      const minPixelX = Math.floor(minX * scaleX);
+      const minPixelY = Math.floor(minY * scaleY);
+      const maxPixelX = Math.ceil(maxX * scaleX);
+      const maxPixelY = Math.ceil(maxY * scaleY);
+
+      // Projdi pouze pixely v bounding boxu
+      for (let y = minPixelY; y <= maxPixelY && y < canvas.height; y++) {
+        for (let x = minPixelX; x <= maxPixelX && x < canvas.width; x++) {
+          const index = (y * canvas.width + x) * 4;
+          
+          const r = data[index];
+          const g = data[index + 1];
+          const b = data[index + 2];
+          const a = data[index + 3];
+          
+          // Zkontroluj, zda je pixel v polygonu
+          const viewBoxX = x / scaleX;
+          const viewBoxY = y / scaleY;
+          
+          if (!isPointInPolygon(viewBoxX, viewBoxY, region)) continue;
+          
+          // Pro sukni: přeskoč POUZE čistě bílé pozadí (s malou tolerancí)
+          // Pro pantle: nahraď vše uvnitř polygonu (bez barevného filtru)
+          // Pro ostatní části: kontroluj barevný rozsah
+          if (partKey === 'sukne') {
+            // Vynech bílé pozadí (s tolerancí 5 pro kompresi JPEG)
+            if (r >= 250 && g >= 250 && b >= 250) continue;
+            // Ignoruj průhledné pixely
+            if (a === 0) continue;
+          } else if (partKey === 'pantle') {
+            // Pro pantle přepiš všechny pixely v polygonu (kromě plně průhledných)
+            if (a === 0) continue;
+          } else {
+            // Ignoruj průhledné pixely
+            if (a === 0) continue;
+            
+            // Zkontroluj, zda pixel odpovídá původní barvě části kroje
+            const [h, s, l] = rgbToHsl(r, g, b);
+            
+            if (!isInColorRange(h, s, l, colorRange)) continue;
+          }
+          
+          // Pro sukni: mapuj podle relativní pozice v regionu
+          // Pro ostatní: použij tile pattern
+          let texX, texY;
+          
+          if (partKey === 'sukne') {
+            // Relativní pozice v regionu (0-1)
+            const relY = (viewBoxY - minY) / regionHeight;
+            const relX = (viewBoxX - minX) / regionWidth;
+            
+            // Pro šířku: opakuj texturu (tile)
+            texX = Math.floor(relX * texCanvas.width) % texCanvas.width;
+            // Pro výšku: přímé mapování (bez opakování)
+            texY = Math.floor(relY * texCanvas.height);
+            
+            // Ošetři přetečení na výšce
+            if (texY >= texCanvas.height) texY = texCanvas.height - 1;
+            if (texY < 0) texY = 0;
+            // Ošetři přetečení na šířce (wrap)
+            if (texX >= texCanvas.width) texX = texX % texCanvas.width;
+            if (texX < 0) texX = 0;
+          } else if (partKey === 'pantle') {
+            // Mapování relativně k oblasti pantle
+            const relY = (viewBoxY - minY) / regionHeight;
+            const relX = (viewBoxX - minX) / regionWidth;
+            // Vertikálně: přímé mapování (bez opakování)
+            texY = Math.floor(relY * texCanvas.height);
+            // Horizontálně: wrap (opakování), aby se vyplnila šířka
+            texX = Math.floor(relX * texCanvas.width) % texCanvas.width;
+            if (texY >= texCanvas.height) texY = texCanvas.height - 1;
+            if (texY < 0) texY = 0;
+            if (texX < 0) texX = 0;
+          } else {
+            // Tile pattern
+            texX = x % texCanvas.width;
+            texY = y % texCanvas.height;
+          }
+          
+          const texIndex = (texY * texCanvas.width + texX) * 4;
+          
+          // Vezmi barvu z textury
+          const texR = texData[texIndex];
+          const texG = texData[texIndex + 1];
+          const texB = texData[texIndex + 2];
+          const texA = texData[texIndex + 3];
+          
+          // Kompletně nahraď pixel texturou
+          data[index] = texR;
+          data[index + 1] = texG;
+          data[index + 2] = texB;
+          data[index + 3] = texA;
+        }
+      }
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+    resolve(canvas.toDataURL());
+  });
+}
+

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { replaceColors } from '@/lib/colorReplacer';
+import { replaceColors, replaceWithTexture } from '@/lib/colorReplacer';
 
 type PartId = 'sukne' | 'fjertuch' | 'satek' | 'pantle';
 
@@ -8,12 +8,14 @@ interface KrojViewerProps {
   onPartClick: (partId: PartId) => void;
   selectedPart: PartId | null;
   colors: Record<string, string>;
+  textures?: Record<string, string>; // URL obrázků pro textury
 }
 
-export default function KrojViewer({ onPartClick, selectedPart, colors }: KrojViewerProps) {
+export default function KrojViewer({ onPartClick, selectedPart, colors, textures }: KrojViewerProps) {
   const [processedImage, setProcessedImage] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const sourceImageRef = useRef<HTMLImageElement | null>(null);
+  const textureImagesRef = useRef<Record<string, HTMLImageElement>>({});
 
   useEffect(() => {
     const img = new Image();
@@ -26,29 +28,84 @@ export default function KrojViewer({ onPartClick, selectedPart, colors }: KrojVi
     };
   }, []);
 
+  // Načti textury a aplikuj je; poté aplikuj barvy na části bez textur
   useEffect(() => {
     if (!sourceImageRef.current || isLoading) return;
     
+    const hasAnyTexture = textures && Object.values(textures).some(t => t);
     const hasAnyColor = Object.values(colors).some(c => c);
-    if (!hasAnyColor) {
+    
+    if (!hasAnyTexture && !hasAnyColor) {
       setProcessedImage(sourceImageRef.current.src);
       return;
     }
 
-    replaceColors(sourceImageRef.current, colors).then(dataUrl => {
-      if (dataUrl) {
-        setProcessedImage(dataUrl);
+    const processImage = async () => {
+      // Načti textury pokud jsou
+      if (hasAnyTexture) {
+        const loaded: Record<string, HTMLImageElement> = {};
+        
+        for (const [key, url] of Object.entries(textures || {})) {
+          if (url) {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            await new Promise((resolve, reject) => {
+              img.onload = resolve;
+              img.onerror = reject;
+              img.src = url;
+            });
+            loaded[key] = img;
+          }
+        }
+        
+        // Aplikuj textury
+        if (Object.keys(loaded).length > 0) {
+          const texturedDataUrl = await replaceWithTexture(sourceImageRef.current!, loaded);
+          if (texturedDataUrl) {
+            // Pokud jsou i barvy, aplikuj je pouze na části bez textur (např. šátek)
+            const colorsForNonTexturedParts = Object.fromEntries(
+              Object.entries(colors).filter(([k, v]) => v && !textures?.[k as keyof typeof textures])
+            );
+
+            if (Object.keys(colorsForNonTexturedParts).length > 0) {
+              const imgAfterTexture = new Image();
+              imgAfterTexture.crossOrigin = 'anonymous';
+              await new Promise((resolve, reject) => {
+                imgAfterTexture.onload = resolve;
+                imgAfterTexture.onerror = reject;
+                imgAfterTexture.src = texturedDataUrl;
+              });
+              const finalDataUrl = await replaceColors(imgAfterTexture, colorsForNonTexturedParts);
+              if (finalDataUrl) {
+                setProcessedImage(finalDataUrl);
+                return;
+              }
+            }
+
+            // Pokud nejsou žádné barvy k aplikaci, nebo selže další krok, ponech texturovaný výsledek
+            setProcessedImage(texturedDataUrl);
+            return;
+          }
+        }
+      } else if (hasAnyColor) {
+        // Použij barvy pokud nejsou textury
+        const dataUrl = await replaceColors(sourceImageRef.current!, colors);
+        if (dataUrl) {
+          setProcessedImage(dataUrl);
+        }
       }
-    });
-  }, [colors, isLoading]);
+    };
+    
+    processImage();
+  }, [colors, textures, isLoading]);
 
   return (
-    <Card className="p-4 bg-card">
-      <div className="relative max-w-md mx-auto">
+    <Card className="p-4 bg-white border w-full lg:w-auto">
+      <div className="relative bg-white rounded-md">
         <img 
           src={processedImage}
           alt="Chodský kroj"
-          className="w-full h-auto rounded-md"
+          className="w-full h-auto max-h-[60vh] lg:max-h-[calc(100vh-16rem)] object-contain rounded-md"
           data-testid="img-main-kroj"
         />
         
@@ -93,25 +150,6 @@ export default function KrojViewer({ onPartClick, selectedPart, colors }: KrojVi
             data-testid="region-pantle-right"
           />
         </svg>
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded border" style={{ backgroundColor: colors.sukne || '#ccc' }}></div>
-          <span className={selectedPart === 'sukne' ? 'font-bold text-primary' : ''}>Sukně</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded border" style={{ backgroundColor: colors.fjertuch || '#ccc' }}></div>
-          <span className={selectedPart === 'fjertuch' ? 'font-bold text-primary' : ''}>Fjertuch</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded border" style={{ backgroundColor: colors.satek || '#ccc' }}></div>
-          <span className={selectedPart === 'satek' ? 'font-bold text-primary' : ''}>Šátek</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded border" style={{ backgroundColor: colors.pantle || '#ccc' }}></div>
-          <span className={selectedPart === 'pantle' ? 'font-bold text-primary' : ''}>Pantl</span>
-        </div>
       </div>
     </Card>
   );

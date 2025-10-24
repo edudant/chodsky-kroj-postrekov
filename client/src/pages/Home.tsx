@@ -46,12 +46,12 @@ const variants: Record<PartId, PartVariant[]> = {
     { id: 'fjertuch_zelena_3', name: 'Zelený 3', image: '/kroje/fjertuch_zelena_3.jpeg', dominantColor: '#15803d' },
   ],
   satek: [
+    // White, blue, dark blue, pink, green
     { id: 'satek_bila', name: 'Bílý', image: '/kroje/satek_bila.jpeg', dominantColor: '#ffffff' },
-    { id: 'satek_cervena', name: 'Červený', image: '/kroje/satek_cervena.jpeg', dominantColor: '#dc2626' },
-    { id: 'satek_modra', name: 'Modrý', image: '/kroje/satek_modra.jpeg', dominantColor: '#3b82f6' },
-    { id: 'satek_modra_2', name: 'Modrý 2', image: '/kroje/satek_modra_2.jpeg', dominantColor: '#2563eb' },
+    { id: 'satek_modra', name: 'Modrý', image: '/kroje/satek_modra.jpeg', dominantColor: '#0ea5e9' },
+    { id: 'satek_modra_2', name: 'Modrý (tmavý)', image: '/kroje/satek_modra_2.jpeg', dominantColor: '#1e40af' },
     { id: 'satek_ruzova', name: 'Růžový', image: '/kroje/satek_ruzova.jpeg', dominantColor: '#ec4899' },
-    { id: 'satek_zelena', name: 'Zelený', image: '/kroje/satek_zelena.jpeg', dominantColor: '#22c55e' },
+    { id: 'satek_zelena', name: 'Zelený', image: '/kroje/satek_zelena.jpeg', dominantColor: '#0d9488' },
   ],
   pantle: [
     { id: 'pantle_bila', name: 'Bílé', image: '/kroje/pantle_bila.jpeg', dominantColor: '#ffffff' },
@@ -70,6 +70,7 @@ export default function Home() {
     pantle: null,
   });
   const [colors, setColors] = useState<Record<string, string>>({});
+  const [textures, setTextures] = useState<Record<string, string>>({});
   const [showValidation, setShowValidation] = useState(false);
   const [validationResult, setValidationResult] = useState({ isValid: false, message: '' });
   const { toast } = useToast();
@@ -85,7 +86,13 @@ export default function Home() {
     
     const variant = variants[partId].find(v => v.id === variantId);
     if (variant) {
-      setColors(prev => ({ ...prev, [partId]: variant.dominantColor }));
+      // Pro sukni, fjertuch a pantle použij texturu, jinak barvu
+      if (partId === 'sukne' || partId === 'fjertuch' || partId === 'pantle') {
+        setTextures(prev => ({ ...prev, [partId]: variant.image }));
+        setColors(prev => ({ ...prev, [partId]: variant.dominantColor }));
+      } else {
+        setColors(prev => ({ ...prev, [partId]: variant.dominantColor }));
+      }
     }
 
     toast({
@@ -140,38 +147,57 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <h1 className="text-3xl md:text-4xl font-serif font-bold text-center text-foreground" data-testid="heading-main">
-            Sestavte si chodský kroj
-          </h1>
-          <p className="text-center text-muted-foreground mt-2">
-            Víš které barvy k sobě patří?
-          </p>
+        <div className="min-h-screen bg-background">
+      <header className="border-b bg-white sticky top-0 z-10 shadow-sm">
+        <div className="container mx-auto px-3 py-1.5 md:px-4 md:py-4">
+          <div className="flex items-center justify-between gap-2 md:gap-4">
+            <div className="flex-1 md:flex-none text-center md:text-center">
+              <h1 className="text-base md:text-3xl lg:text-4xl font-serif font-bold text-foreground leading-tight" data-testid="heading-main">
+                Sestav si chodský kroj
+              </h1>
+              <p className="text-[10px] md:text-sm text-muted-foreground mt-0.5 md:mt-2">
+                Víš, které barvy k sobě patří?
+              </p>
+            </div>
+            <div className="flex items-center gap-2 md:gap-3">
+              <img 
+                src="/nsp.jpg" 
+                alt="Národopisný soubor Postřekov" 
+                className="h-9 md:h-14 lg:h-16 w-auto object-contain"
+              />
+              <img 
+                src="/obec_postrekov.jpg" 
+                alt="Obec Postřekov" 
+                className="h-9 md:h-14 lg:h-16 w-auto object-contain"
+              />
+            </div>
+          </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-2 gap-8 items-start">
-          <div className="lg:sticky lg:top-24">
-            <KrojViewer 
-              onPartClick={handlePartClick}
-              selectedPart={selectedPart}
-              colors={colors}
-            />
-            
-            <Button 
-              size="lg"
-              className="w-full mt-6 text-lg"
-              onClick={validateCombination}
-              data-testid="button-validate"
-            >
-              Vyhodnotit kombinaci
-            </Button>
+        <div className="grid lg:grid-cols-[auto_1fr] gap-8 items-start">
+          <div className="lg:sticky lg:top-24 w-full lg:w-auto">
+            <div className="max-w-md lg:max-w-none lg:max-h-[calc(100vh-8rem)] flex flex-col">
+              <KrojViewer 
+                onPartClick={handlePartClick}
+                selectedPart={selectedPart}
+                colors={colors}
+                textures={textures}
+              />
+              
+              <Button 
+                size="lg"
+                className="w-full mt-6 text-lg"
+                onClick={validateCombination}
+                data-testid="button-validate"
+              >
+                Vyhodnotit kombinaci
+              </Button>
+            </div>
           </div>
 
-          <div className="space-y-12 pb-12">
+          <div className="space-y-12 pb-12 flex-1">
             <div id="gallery-satek">
               <PartGallery 
                 partName="Šátek"
@@ -210,6 +236,12 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      <footer className="border-t bg-card/30">
+        <div className="container mx-auto px-4 py-6 text-center text-xs text-muted-foreground">
+          Copyright: Národopisný soubor Postřekov © 2024, Jiří Bubník
+        </div>
+      </footer>
 
       <ValidationDialog 
         open={showValidation}
