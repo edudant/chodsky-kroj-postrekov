@@ -5,6 +5,7 @@ import PartGallery from '@/components/PartGallery';
 import ValidationDialog from '@/components/ValidationDialog';
 import { extractDominantColor, colorToString } from '@/lib/colorExtractor';
 import { useToast } from '@/hooks/use-toast';
+import { getAssetPath } from '@/lib/utils';
 
 
 type PartId = 'sukne' | 'fjertuch' | 'satek' | 'pantle';
@@ -26,38 +27,38 @@ const partDisplayNames: Record<PartId, string> = {
 
 const variants: Record<PartId, PartVariant[]> = {
   sukne: [
-    { id: 'sukne_bila', name: 'Bílá', image: '/kroje/sukne_bila.jpeg', dominantColor: '#ffffff' },
-    { id: 'sukne_cervena', name: 'Červená', image: '/kroje/sukne_cervena.jpeg', dominantColor: '#dc2626' },
-    { id: 'sukne_zluta', name: 'Žlutá', image: '/kroje/sukne_zluta.jpeg', dominantColor: '#eab308' },
+    { id: 'sukne_bila', name: 'Bílá', image: getAssetPath('/kroje/sukne_bila.jpeg'), dominantColor: '#ffffff' },
+    { id: 'sukne_cervena', name: 'Červená', image: getAssetPath('/kroje/sukne_cervena.jpeg'), dominantColor: '#dc2626' },
+    { id: 'sukne_zluta', name: 'Žlutá', image: getAssetPath('/kroje/sukne_zluta.jpeg'), dominantColor: '#eab308' },
   ],
   fjertuch: [
-    { id: 'fjertuch_barevna', name: 'Barevný', image: '/kroje/fjertuch_barevna.jpeg', dominantColor: '#a855f7' },
-    { id: 'fjertuch_barevna_2', name: 'Barevný 2', image: '/kroje/fjertuch_barevna_2.jpeg', dominantColor: '#ec4899' },
-    { id: 'fjertuch_cervena', name: 'Červený', image: '/kroje/fjertuch_cervena.jpeg', dominantColor: '#dc2626' },
-    { id: 'fjertuch_fialova', name: 'Fialový', image: '/kroje/fjertuch_fialova.jpeg', dominantColor: '#a855f7' },
-    { id: 'fjertuch_fialova_2', name: 'Fialový 2', image: '/kroje/fjertuch_fialova_2.jpeg', dominantColor: '#9333ea' },
-    { id: 'fjertuch_hneda', name: 'Hnědý', image: '/kroje/fjertuch_hneda.jpeg', dominantColor: '#92400e' },
-    { id: 'fjertuch_modra', name: 'Modrý', image: '/kroje/fjertuch_modra.jpeg', dominantColor: '#3b82f6' },
-    { id: 'fjertuch_ruzova', name: 'Růžový', image: '/kroje/fjertuch_ruzova.jpeg', dominantColor: '#ec4899' },
-    // { id: 'fjertuch_ruzova_2', name: 'Růžový 2', image: '/kroje/fjertuch_ruzova_2.jpeg', dominantColor: '#db2777' },
-    { id: 'fjertuch_ruzova_3', name: 'Růžový 3', image: '/kroje/fjertuch_ruzova_3.jpeg', dominantColor: '#be185d' },
-    { id: 'fjertuch_zelena', name: 'Zelený', image: '/kroje/fjertuch_zelena.jpeg', dominantColor: '#22c55e' },
-    // { id: 'fjertuch_zelena_2', name: 'Zelený 2', image: '/kroje/fjertuch_zelena_2.jpeg', dominantColor: '#16a34a' },
-    { id: 'fjertuch_zelena_3', name: 'Zelený 3', image: '/kroje/fjertuch_zelena_3.jpeg', dominantColor: '#15803d' },
+    { id: 'fjertuch_barevna', name: 'Barevný', image: getAssetPath('/kroje/fjertuch_barevna.jpeg'), dominantColor: '#a855f7' },
+    { id: 'fjertuch_barevna_2', name: 'Barevný 2', image: getAssetPath('/kroje/fjertuch_barevna_2.jpeg'), dominantColor: '#ec4899' },
+    { id: 'fjertuch_cervena', name: 'Červený', image: getAssetPath('/kroje/fjertuch_cervena.jpeg'), dominantColor: '#dc2626' },
+    { id: 'fjertuch_fialova', name: 'Fialový', image: getAssetPath('/kroje/fjertuch_fialova.jpeg'), dominantColor: '#a855f7' },
+    { id: 'fjertuch_fialova_2', name: 'Fialový 2', image: getAssetPath('/kroje/fjertuch_fialova_2.jpeg'), dominantColor: '#9333ea' },
+    { id: 'fjertuch_hneda', name: 'Hnědý', image: getAssetPath('/kroje/fjertuch_hneda.jpeg'), dominantColor: '#92400e' },
+    { id: 'fjertuch_modra', name: 'Modrý', image: getAssetPath('/kroje/fjertuch_modra.jpeg'), dominantColor: '#3b82f6' },
+    { id: 'fjertuch_ruzova', name: 'Růžový', image: getAssetPath('/kroje/fjertuch_ruzova.jpeg'), dominantColor: '#ec4899' },
+    // { id: 'fjertuch_ruzova_2', name: 'Růžový 2', image: getAssetPath('/kroje/fjertuch_ruzova_2.jpeg'), dominantColor: '#db2777' },
+    { id: 'fjertuch_ruzova_3', name: 'Růžový 3', image: getAssetPath('/kroje/fjertuch_ruzova_3.jpeg'), dominantColor: '#be185d' },
+    { id: 'fjertuch_zelena', name: 'Zelený', image: getAssetPath('/kroje/fjertuch_zelena.jpeg'), dominantColor: '#22c55e' },
+    // { id: 'fjertuch_zelena_2', name: 'Zelený 2', image: getAssetPath('/kroje/fjertuch_zelena_2.jpeg'), dominantColor: '#16a34a' },
+    { id: 'fjertuch_zelena_3', name: 'Zelený 3', image: getAssetPath('/kroje/fjertuch_zelena_3.jpeg'), dominantColor: '#15803d' },
   ],
   satek: [
     // White, blue, dark blue, pink, green
-    { id: 'satek_bila', name: 'Bílý', image: '/kroje/satek_bila.jpeg', dominantColor: '#ffffff' },
-    { id: 'satek_modra', name: 'Modrý', image: '/kroje/satek_modra.jpeg', dominantColor: '#0ea5e9' },
-    { id: 'satek_modra_2', name: 'Modrý (tmavý)', image: '/kroje/satek_modra_2.jpeg', dominantColor: '#1e40af' },
-    { id: 'satek_ruzova', name: 'Růžový', image: '/kroje/satek_ruzova.jpeg', dominantColor: '#ec4899' },
-    { id: 'satek_zelena', name: 'Zelený', image: '/kroje/satek_zelena.jpeg', dominantColor: '#0d9488' },
+    { id: 'satek_bila', name: 'Bílý', image: getAssetPath('/kroje/satek_bila.jpeg'), dominantColor: '#ffffff' },
+    { id: 'satek_modra', name: 'Modrý', image: getAssetPath('/kroje/satek_modra.jpeg'), dominantColor: '#0ea5e9' },
+    { id: 'satek_modra_2', name: 'Modrý (tmavý)', image: getAssetPath('/kroje/satek_modra_2.jpeg'), dominantColor: '#1e40af' },
+    { id: 'satek_ruzova', name: 'Růžový', image: getAssetPath('/kroje/satek_ruzova.jpeg'), dominantColor: '#ec4899' },
+    { id: 'satek_zelena', name: 'Zelený', image: getAssetPath('/kroje/satek_zelena.jpeg'), dominantColor: '#0d9488' },
   ],
   pantle: [
-    { id: 'pantle_bila', name: 'Bílé', image: '/kroje/pantle_bila.jpeg', dominantColor: '#ffffff' },
-    { id: 'pantle_cervena', name: 'Červené', image: '/kroje/pantle_cervena.jpeg', dominantColor: '#dc2626' },
-    { id: 'pantle_modra', name: 'Modré', image: '/kroje/pantle_modra.jpeg', dominantColor: '#3b82f6' },
-    { id: 'pantle_zelena', name: 'Zelené', image: '/kroje/pantle_zelena.jpeg', dominantColor: '#22c55e' },
+    { id: 'pantle_bila', name: 'Bílé', image: getAssetPath('/kroje/pantle_bila.jpeg'), dominantColor: '#ffffff' },
+    { id: 'pantle_cervena', name: 'Červené', image: getAssetPath('/kroje/pantle_cervena.jpeg'), dominantColor: '#dc2626' },
+    { id: 'pantle_modra', name: 'Modré', image: getAssetPath('/kroje/pantle_modra.jpeg'), dominantColor: '#3b82f6' },
+    { id: 'pantle_zelena', name: 'Zelené', image: getAssetPath('/kroje/pantle_zelena.jpeg'), dominantColor: '#22c55e' },
   ],
 };
 
@@ -167,7 +168,7 @@ export default function Home() {
                 className="transition-opacity hover:opacity-80"
               >
                 <img 
-                  src="/nsp.jpg" 
+                  src={getAssetPath('/nsp.jpg')}
                   alt="Národopisný soubor Postřekov" 
                   className="h-9 md:h-14 lg:h-16 w-auto object-contain"
                 />
@@ -179,7 +180,7 @@ export default function Home() {
                 className="transition-opacity hover:opacity-80"
               >
                 <img 
-                  src="/obec_postrekov.jpg" 
+                  src={getAssetPath('/obec_postrekov.jpg')}
                   alt="Obec Postřekov" 
                   className="h-9 md:h-14 lg:h-16 w-auto object-contain"
                 />

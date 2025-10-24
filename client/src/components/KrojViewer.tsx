@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { replaceColors, replaceWithTexture } from '@/lib/colorReplacer';
+import { getAssetPath } from '@/lib/utils';
 
 type PartId = 'sukne' | 'fjertuch' | 'satek' | 'pantle';
 
@@ -20,7 +21,7 @@ export default function KrojViewer({ onPartClick, selectedPart, colors, textures
   useEffect(() => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.src = '/kroj-sablona.jpg';
+    img.src = getAssetPath('/kroj-sablona.jpg');
     img.onload = () => {
       sourceImageRef.current = img;
       setProcessedImage(img.src);
