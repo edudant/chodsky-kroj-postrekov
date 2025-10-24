@@ -99,6 +99,16 @@ export default function Home() {
     toast({
       title: 'Varianta vybrána',
       description: `${variant?.name} - ${partDisplayNames[partId]}`,
+      action: (
+        <Button
+          size="sm"
+          onClick={() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        >
+          Zobrazit
+        </Button>
+      ),
     });
   };
 
@@ -150,13 +160,13 @@ export default function Home() {
   return (
         <div className="min-h-screen bg-background">
       <header className="border-b bg-white sticky top-0 z-10 shadow-sm">
-        <div className="container mx-auto px-3 py-1.5 md:px-4 md:py-4">
+        <div className="container mx-auto px-3 py-1 md:px-4 md:py-4">
           <div className="flex items-center justify-between gap-2 md:gap-4">
             <div className="flex-1 md:flex-none text-center md:text-center">
-              <h1 className="text-base md:text-3xl lg:text-4xl font-serif font-bold text-foreground leading-tight" data-testid="heading-main">
+              <h1 className="text-lg md:text-3xl lg:text-4xl font-serif font-bold text-foreground leading-tight" data-testid="heading-main">
                 Sestav si chodský kroj
               </h1>
-              <p className="text-[10px] md:text-sm text-muted-foreground mt-0.5 md:mt-2">
+              <p className="text-xs md:text-sm text-muted-foreground mt-0 md:mt-2">
                 Víš, které barvy k sobě patří?
               </p>
             </div>
@@ -190,8 +200,8 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-[auto_1fr] gap-8 items-start">
+      <main className="container mx-auto px-4 py-2 md:py-8">
+        <div className="grid lg:grid-cols-[auto_1fr] gap-2 md:gap-8 items-start">
           <div className="lg:sticky lg:top-24 w-full lg:w-auto">
             <div className="max-w-md lg:max-w-none lg:max-h-[calc(100vh-8rem)] flex flex-col">
               <KrojViewer 

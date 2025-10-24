@@ -101,14 +101,22 @@ export default function KrojViewer({ onPartClick, selectedPart, colors, textures
   }, [colors, textures, isLoading]);
 
   return (
-    <Card className="p-4 bg-white border w-full lg:w-auto">
+    <Card className="p-2 md:p-4 bg-white border w-full lg:w-auto">
       <div className="relative bg-white rounded-md">
-        <img 
-          src={processedImage}
-          alt="Chodský kroj"
-          className="w-full h-auto max-h-[60vh] lg:max-h-[calc(100vh-16rem)] object-contain rounded-md"
-          data-testid="img-main-kroj"
-        />
+        {isLoading ? (
+          <div className="w-full h-[60vh] lg:h-[calc(100vh-16rem)] flex items-center justify-center bg-muted/10 rounded-md">
+            <div className="text-center">
+              <div className="animate-pulse text-muted-foreground">Načítání...</div>
+            </div>
+          </div>
+        ) : (
+          <img 
+            src={processedImage}
+            alt="Chodský kroj"
+            className="w-full h-auto max-h-[60vh] lg:max-h-[calc(100vh-16rem)] object-contain rounded-md"
+            data-testid="img-main-kroj"
+          />
+        )}
         
         <svg 
           className="absolute inset-0 w-full h-full pointer-events-none" 
