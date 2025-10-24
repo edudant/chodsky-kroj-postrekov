@@ -47,32 +47,23 @@ export default function ImageZoom({
         className="max-w-6xl w-[95vw] h-[95vh] p-0 bg-background/95 backdrop-blur-sm flex flex-col"
         data-testid="dialog-image-zoom"
       >
-        <DialogHeader className="px-6 py-4 border-b shrink-0">
-          <DialogTitle className="text-lg font-serif" data-testid="text-zoom-title">
+        <DialogHeader className="px-3 py-2 md:px-6 md:py-4 border-b shrink-0">
+          <DialogTitle className="text-center text-base md:text-lg font-serif" data-testid="text-zoom-title">
             {imageName}
           </DialogTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-4 top-4"
-            onClick={() => onOpenChange(false)}
-            data-testid="button-close-zoom"
-          >
-            <X className="h-5 w-5" />
-          </Button>
         </DialogHeader>
 
-        <div className="relative flex-1 flex items-center justify-center min-h-0 p-12 overflow-hidden">
-          <div className="flex items-center justify-center gap-4 w-full h-full max-w-full max-h-full">
+        <div className="relative flex-1 flex items-center justify-center min-h-0 p-3 md:p-12 overflow-hidden">
+          <div className="flex items-center justify-center gap-2 md:gap-4 w-full h-full max-w-full max-h-full">
             {hasPrevious && (
               <Button
                 variant="secondary"
                 size="icon"
-                className="h-12 w-12 rounded-full shadow-xl shrink-0"
+                className="h-10 w-10 md:h-12 md:w-12 rounded-full shadow-xl shrink-0"
                 onClick={handlePrevious}
                 data-testid="button-previous-image"
               >
-                <ChevronLeft className="h-6 w-6" />
+                <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
               </Button>
             )}
 
@@ -93,18 +84,18 @@ export default function ImageZoom({
               <Button
                 variant="secondary"
                 size="icon"
-                className="h-12 w-12 rounded-full shadow-xl shrink-0"
+                className="h-10 w-10 md:h-12 md:w-12 rounded-full shadow-xl shrink-0"
                 onClick={handleNext}
                 data-testid="button-next-image"
               >
-                <ChevronRight className="h-6 w-6" />
+                <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
               </Button>
             )}
           </div>
         </div>
 
         {images && currentIndex !== undefined && (
-          <div className="px-6 py-3 border-t bg-muted/30 text-center text-sm text-muted-foreground shrink-0">
+          <div className="px-3 py-2 md:px-6 md:py-3 border-t bg-muted/30 text-center text-xs md:text-sm text-muted-foreground shrink-0">
             {currentIndex + 1} / {images.length}
           </div>
         )}
