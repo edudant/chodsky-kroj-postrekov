@@ -96,14 +96,16 @@ export default function Home() {
       }
     }
 
-    toast({
+    const { dismiss } = toast({
       title: 'Varianta vybrána',
       description: `${variant?.name} - ${partDisplayNames[partId]}`,
+      duration: 2000,
       action: (
         <Button
           size="sm"
           onClick={() => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            dismiss();
           }}
         >
           Zobrazit
