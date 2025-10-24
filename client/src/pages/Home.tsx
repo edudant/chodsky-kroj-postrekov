@@ -160,16 +160,30 @@ export default function Home() {
               </p>
             </div>
             <div className="flex items-center gap-2 md:gap-3">
-              <img 
-                src="/nsp.jpg" 
-                alt="Národopisný soubor Postřekov" 
-                className="h-9 md:h-14 lg:h-16 w-auto object-contain"
-              />
-              <img 
-                src="/obec_postrekov.jpg" 
-                alt="Obec Postřekov" 
-                className="h-9 md:h-14 lg:h-16 w-auto object-contain"
-              />
+              <a 
+                href="https://postrekovo.cz/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="transition-opacity hover:opacity-80"
+              >
+                <img 
+                  src="/nsp.jpg" 
+                  alt="Národopisný soubor Postřekov" 
+                  className="h-9 md:h-14 lg:h-16 w-auto object-contain"
+                />
+              </a>
+              <a 
+                href="https://www.obecpostrekov.cz/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="transition-opacity hover:opacity-80"
+              >
+                <img 
+                  src="/obec_postrekov.jpg" 
+                  alt="Obec Postřekov" 
+                  className="h-9 md:h-14 lg:h-16 w-auto object-contain"
+                />
+              </a>
             </div>
           </div>
         </div>
@@ -239,7 +253,7 @@ export default function Home() {
 
       <footer className="border-t bg-card/30">
         <div className="container mx-auto px-4 py-6 text-center text-xs text-muted-foreground">
-          Copyright: Národopisný soubor Postřekov © 2024, Jiří Bubník
+          Copyright: <a href="https://postrekovo.cz/" target="_blank" rel="noopener noreferrer" className="hover:underline">Národopisný soubor Postřekov</a> © 2024, <a href="http://jiribubnik.cz/" target="_blank" rel="noopener noreferrer" className="hover:underline">Jiří Bubník</a>
         </div>
       </footer>
 
