@@ -26,9 +26,9 @@ const partDisplayNames: Record<PartId, string> = {
 
 const variants: Record<PartId, PartVariant[]> = {
   sukne: [
-    { id: 'sukne_bila', name: 'Bílá', image: '/kroje/sukne_bila.jpeg', dominantColor: '#ffffff', shouldRotate: true },
-    { id: 'sukne_cervena', name: 'Červená', image: '/kroje/sukne_cervena.jpeg', dominantColor: '#dc2626', shouldRotate: true },
-    { id: 'sukne_zluta', name: 'Žlutá', image: '/kroje/sukne_zluta.jpeg', dominantColor: '#eab308', shouldRotate: true },
+    { id: 'sukne_bila', name: 'Bílá', image: '/kroje/sukne_bila.jpeg', dominantColor: '#ffffff' },
+    { id: 'sukne_cervena', name: 'Červená', image: '/kroje/sukne_cervena.jpeg', dominantColor: '#dc2626' },
+    { id: 'sukne_zluta', name: 'Žlutá', image: '/kroje/sukne_zluta.jpeg', dominantColor: '#eab308' },
   ],
   fjertuch: [
     { id: 'fjertuch_barevna', name: 'Barevný', image: '/kroje/fjertuch_barevna.jpeg', dominantColor: '#a855f7' },
@@ -39,10 +39,10 @@ const variants: Record<PartId, PartVariant[]> = {
     { id: 'fjertuch_hneda', name: 'Hnědý', image: '/kroje/fjertuch_hneda.jpeg', dominantColor: '#92400e' },
     { id: 'fjertuch_modra', name: 'Modrý', image: '/kroje/fjertuch_modra.jpeg', dominantColor: '#3b82f6' },
     { id: 'fjertuch_ruzova', name: 'Růžový', image: '/kroje/fjertuch_ruzova.jpeg', dominantColor: '#ec4899' },
-    { id: 'fjertuch_ruzova_2', name: 'Růžový 2', image: '/kroje/fjertuch_ruzova_2.jpeg', dominantColor: '#db2777' },
+    // { id: 'fjertuch_ruzova_2', name: 'Růžový 2', image: '/kroje/fjertuch_ruzova_2.jpeg', dominantColor: '#db2777' },
     { id: 'fjertuch_ruzova_3', name: 'Růžový 3', image: '/kroje/fjertuch_ruzova_3.jpeg', dominantColor: '#be185d' },
     { id: 'fjertuch_zelena', name: 'Zelený', image: '/kroje/fjertuch_zelena.jpeg', dominantColor: '#22c55e' },
-    { id: 'fjertuch_zelena_2', name: 'Zelený 2', image: '/kroje/fjertuch_zelena_2.jpeg', dominantColor: '#16a34a' },
+    // { id: 'fjertuch_zelena_2', name: 'Zelený 2', image: '/kroje/fjertuch_zelena_2.jpeg', dominantColor: '#16a34a' },
     { id: 'fjertuch_zelena_3', name: 'Zelený 3', image: '/kroje/fjertuch_zelena_3.jpeg', dominantColor: '#15803d' },
   ],
   satek: [
@@ -54,10 +54,10 @@ const variants: Record<PartId, PartVariant[]> = {
     { id: 'satek_zelena', name: 'Zelený', image: '/kroje/satek_zelena.jpeg', dominantColor: '#22c55e' },
   ],
   pantle: [
-    { id: 'pantle_bila', name: 'Bílé', image: '/kroje/pantle_bila.jpeg', dominantColor: '#ffffff', shouldRotate: true },
-    { id: 'pantle_cervena', name: 'Červené', image: '/kroje/pantle_cervena.jpeg', dominantColor: '#dc2626', shouldRotate: true },
-    { id: 'pantle_modra', name: 'Modré', image: '/kroje/pantle_modra.jpeg', dominantColor: '#3b82f6', shouldRotate: true },
-    { id: 'pantle_zelena', name: 'Zelené', image: '/kroje/pantle_zelena.jpeg', dominantColor: '#22c55e', shouldRotate: true },
+    { id: 'pantle_bila', name: 'Bílé', image: '/kroje/pantle_bila.jpeg', dominantColor: '#ffffff' },
+    { id: 'pantle_cervena', name: 'Červené', image: '/kroje/pantle_cervena.jpeg', dominantColor: '#dc2626' },
+    { id: 'pantle_modra', name: 'Modré', image: '/kroje/pantle_modra.jpeg', dominantColor: '#3b82f6' },
+    { id: 'pantle_zelena', name: 'Zelené', image: '/kroje/pantle_zelena.jpeg', dominantColor: '#22c55e' },
   ],
 };
 
@@ -144,7 +144,7 @@ export default function Home() {
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <h1 className="text-3xl md:text-4xl font-serif font-bold text-center text-foreground" data-testid="heading-main">
-            Sestavte si: Chodský kroj
+            Sestavte si chodský kroj
           </h1>
           <p className="text-center text-muted-foreground mt-2">
             Víš které barvy k sobě patří?

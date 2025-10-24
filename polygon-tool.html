@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nástroj pro definici polygonů</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .canvas-wrapper {
+            position: relative;
+            display: inline-block;
+            border: 2px solid #333;
+        }
+        canvas {
+            display: block;
+            cursor: crosshair;
+        }
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button.active {
+            background: #28a745;
+        }
+        button.danger {
+            background: #dc3545;
+        }
+        button.danger:hover {
+            background: #c82333;
+        }
+        .output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        .output pre {
+            margin: 10px 0 0 0;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .info {
+            margin: 10px 0;
+            padding: 10px;
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Nástroj pro definici polygonů kroje</h1>
+        
+        <div class="info">
+            <strong>Jak používat:</strong>
+            <ol>
+                <li>Vyber část kroje (Sukně, Fjertuch, Šátek, nebo Pantl)</li>
+                <li>Klikej na obrázek pro vytvoření bodů polygonu</li>
+                <li>Pro uzavření polygonu klikni na první bod nebo stiskni "Ukončit polygon"</li>
+                <li>Opakuj pro další části</li>
+                <li>Zkopíruj vygenerovaný kód</li>
+            </ol>
+            <strong>ViewBox:</strong> 1000 × 1400 (používá se pro škálování)
+        </div>
+
+        <div class="controls">
+            <button id="btn-sukne" onclick="selectPart('sukne')">Sukně</button>
+            <button id="btn-fjertuch" onclick="selectPart('fjertuch')">Fjertuch</button>
+            <button id="btn-satek" onclick="selectPart('satek')">Šátek</button>
+            <button id="btn-pantle" onclick="selectPart('pantle')">Pantl</button>
+            <button class="danger" onclick="finishPolygon()">Ukončit polygon</button>
+            <button class="danger" onclick="undoLastPoint()">Zpět poslední bod</button>
+            <button class="danger" onclick="clearCurrent()">Smazat aktuální</button>
+            <button class="danger" onclick="clearAll()">Smazat vše</button>
+        </div>
+
+        <div class="canvas-wrapper">
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <div class="output">
+            <h3>📋 Vygenerovaný kód:</h3>
+            <pre id="output-code">// Vyber část kroje a začni klikat na obrázek...</pre>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const outputCode = document.getElementById('output-code');
+        
+        const VIEWBOX_WIDTH = 1000;
+        const VIEWBOX_HEIGHT = 1400;
+        
+        let img = new Image();
+        let currentPart = null;
+        let currentPoints = [];
+        let polygons = {
+            sukne: [],
+            fjertuch: [],
+            satek: [],
+            pantle: []
+        };
+        
+        const colors = {
+            sukne: 'rgba(255, 0, 0, 0.3)',
+            fjertuch: 'rgba(0, 255, 0, 0.3)',
+            satek: 'rgba(0, 0, 255, 0.3)',
+            pantle: 'rgba(255, 255, 0, 0.3)'
+        };
+
+        img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            redraw();
+        };
+        img.src = 'kroj-sablona.jpg';
+
+        function selectPart(part) {
+            if (currentPoints.length > 0) {
+                if (!confirm('Máš nedokončený polygon. Chceš ho uložit?')) {
+                    currentPoints = [];
+                }
+            }
+            
+            currentPart = part;
+            
+            // Update button states
+            document.querySelectorAll('.controls button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`btn-${part}`).classList.add('active');
+            
+            redraw();
+        }
+
+        function imageToViewBox(x, y) {
+            return {
+                x: Math.round((x / canvas.width) * VIEWBOX_WIDTH),
+                y: Math.round((y / canvas.height) * VIEWBOX_HEIGHT)
+            };
+        }
+
+        function viewBoxToImage(vx, vy) {
+            return {
+                x: (vx / VIEWBOX_WIDTH) * canvas.width,
+                y: (vy / VIEWBOX_HEIGHT) * canvas.height
+            };
+        }
+
+        canvas.addEventListener('click', function(e) {
+            if (!currentPart) {
+                alert('Nejdřív vyber část kroje!');
+                return;
+            }
+
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Check if clicking near first point to close polygon
+            if (currentPoints.length > 2) {
+                const first = currentPoints[0];
+                const firstImg = viewBoxToImage(first.x, first.y);
+                const distance = Math.sqrt(Math.pow(x - firstImg.x, 2) + Math.pow(y - firstImg.y, 2));
+                
+                if (distance < 10) {
+                    finishPolygon();
+                    return;
+                }
+            }
+            
+            const viewBoxPoint = imageToViewBox(x, y);
+            currentPoints.push(viewBoxPoint);
+            redraw();
+            updateOutput();
+        });
+
+        function finishPolygon() {
+            if (!currentPart || currentPoints.length < 3) {
+                alert('Potřebuješ aspoň 3 body pro polygon!');
+                return;
+            }
+            
+            polygons[currentPart] = [...currentPoints];
+            currentPoints = [];
+            redraw();
+            updateOutput();
+        }
+
+        function undoLastPoint() {
+            if (currentPoints.length > 0) {
+                currentPoints.pop();
+                redraw();
+                updateOutput();
+            }
+        }
+
+        function clearCurrent() {
+            if (!currentPart) return;
+            currentPoints = [];
+            polygons[currentPart] = [];
+            redraw();
+            updateOutput();
+        }
+
+        function clearAll() {
+            if (confirm('Opravdu smazat všechny polygony?')) {
+                currentPoints = [];
+                polygons = {
+                    sukne: [],
+                    fjertuch: [],
+                    satek: [],
+                    pantle: []
+                };
+                redraw();
+                updateOutput();
+            }
+        }
+
+        function redraw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+            
+            // Draw saved polygons
+            Object.keys(polygons).forEach(part => {
+                if (polygons[part].length > 0) {
+                    drawPolygon(polygons[part], colors[part], true);
+                }
+            });
+            
+            // Draw current polygon being created
+            if (currentPoints.length > 0 && currentPart) {
+                drawPolygon(currentPoints, colors[currentPart], false);
+            }
+        }
+
+        function drawPolygon(points, color, closed) {
+            if (points.length === 0) return;
+            
+            ctx.beginPath();
+            const first = viewBoxToImage(points[0].x, points[0].y);
+            ctx.moveTo(first.x, first.y);
+            
+            for (let i = 1; i < points.length; i++) {
+                const p = viewBoxToImage(points[i].x, points[i].y);
+                ctx.lineTo(p.x, p.y);
+            }
+            
+            if (closed) {
+                ctx.closePath();
+            }
+            
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = color.replace('0.3', '1');
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw points
+            points.forEach((point, index) => {
+                const p = viewBoxToImage(point.x, point.y);
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 5, 0, 2 * Math.PI);
+                ctx.fillStyle = index === 0 ? '#ff0000' : '#ffffff';
+                ctx.fill();
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+        }
+
+        function updateOutput() {
+            let code = `// ViewBox: ${VIEWBOX_WIDTH}x${VIEWBOX_HEIGHT}\nconst regions = {\n`;
+            
+            Object.keys(polygons).forEach(part => {
+                if (polygons[part].length > 0) {
+                    const points = polygons[part].map(p => `[${p.x}, ${p.y}]`).join(', ');
+                    code += `  ${part}: [${points}],\n`;
+                }
+            });
+            
+            if (currentPoints.length > 0 && currentPart) {
+                const points = currentPoints.map(p => `[${p.x}, ${p.y}]`).join(', ');
+                code += `  ${currentPart}: [${points}], // NEDOKONČENO\n`;
+            }
+            
+            code += '};';
+            
+            outputCode.textContent = code;
+        }
+
+        // Initial draw
+        if (img.complete) {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            redraw();
+        }
+    </script>
+</body>
+</html>

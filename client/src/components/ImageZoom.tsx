@@ -62,8 +62,8 @@ export default function ImageZoom({
           </Button>
         </DialogHeader>
 
-        <div className="relative flex-1 flex items-center justify-center min-h-0 p-12">
-          <div className="flex items-center justify-center gap-4 w-full h-full">
+        <div className="relative flex-1 flex items-center justify-center min-h-0 p-12 overflow-hidden">
+          <div className="flex items-center justify-center gap-4 w-full h-full max-w-full max-h-full">
             {hasPrevious && (
               <Button
                 variant="secondary"
@@ -76,7 +76,7 @@ export default function ImageZoom({
               </Button>
             )}
 
-            <div className="flex items-center justify-center flex-1 min-w-0 min-h-0">
+            <div className="flex items-center justify-center flex-1 min-w-0 min-h-0 overflow-hidden">
               <img
                 src={imageSrc}
                 alt={imageName}

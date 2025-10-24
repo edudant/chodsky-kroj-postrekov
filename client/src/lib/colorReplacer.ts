@@ -7,9 +7,14 @@ export interface ColorRange {
   lMax: number;
 }
 
+export type Point = [number, number];
+
+export type Region = Point[];
+
 export interface KrojPart {
   name: string;
   originalColorRange: ColorRange;
+  region?: Region;
 }
 
 export const krojParts: Record<string, KrojPart> = {
@@ -23,6 +28,7 @@ export const krojParts: Record<string, KrojPart> = {
       lMin: 50,
       lMax: 85,
     },
+    region: [[506, 269], [528, 288], [533, 303], [538, 329], [538, 354], [526, 370], [501, 385], [568, 461], [613, 514], [657, 544], [705, 569], [725, 543], [749, 522], [769, 496], [787, 456], [797, 432], [784, 388], [769, 394], [777, 421], [757, 440], [730, 463], [722, 477], [715, 508], [697, 517], [682, 478], [667, 437], [633, 428], [598, 409], [573, 355], [555, 328], [533, 290]],
   },
   fjertuch: {
     name: 'Fjertuch',
@@ -34,6 +40,7 @@ export const krojParts: Record<string, KrojPart> = {
       lMin: 15,
       lMax: 75,
     },
+    region: [[389, 599], [364, 629], [349, 754], [349, 796], [351, 863], [339, 1031], [416, 1051], [531, 1045], [555, 1040], [722, 1041], [727, 1027], [869, 1023], [901, 1012], [861, 772], [822, 661], [822, 627], [799, 583], [650, 575], [598, 541], [570, 594], [553, 599], [508, 587], [429, 603]],
   },
   sukne: {
     name: 'Sukně',
@@ -45,6 +52,7 @@ export const krojParts: Record<string, KrojPart> = {
       lMin: 20,
       lMax: 75,
     },
+    region: [[351, 988], [354, 950], [354, 868], [356, 772], [371, 638], [394, 600], [359, 593], [327, 630], [264, 976]],
   },
   pantle: {
     name: 'Pantle',
@@ -56,6 +64,7 @@ export const krojParts: Record<string, KrojPart> = {
       lMin: 40,
       lMax: 85,
     },
+    region: [[441, 514], [431, 536], [456, 545], [478, 535], [521, 529], [523, 520]],
   },
 };
 
@@ -133,6 +142,27 @@ function isInColorRange(h: number, s: number, l: number, range: ColorRange): boo
   return hInRange && s >= sMin && s <= sMax && l >= lMin && l <= lMax;
 }
 
+// Ray casting algorithm pro detekci bodu v polygonu
+function isPointInPolygon(x: number, y: number, polygon: Region): boolean {
+  let inside = false;
+  
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i][0];
+    const yi = polygon[i][1];
+    const xj = polygon[j][0];
+    const yj = polygon[j][1];
+    
+    const intersect = ((yi > y) !== (yj > y)) &&
+      (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    
+    if (intersect) {
+      inside = !inside;
+    }
+  }
+  
+  return inside;
+}
+
 export function replaceColors(
   sourceImage: HTMLImageElement,
   colorReplacements: Record<string, string>
@@ -154,7 +184,12 @@ export function replaceColors(
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
 
-    const replacements: Array<{ range: ColorRange; targetHsl: [number, number, number] }> = [];
+    // Připrava náhrad s regiony
+    const replacements: Array<{ 
+      range: ColorRange; 
+      targetHsl: [number, number, number];
+      region?: Region;
+    }> = [];
     
     for (const [partKey, hexColor] of Object.entries(colorReplacements)) {
       const part = krojParts[partKey];
@@ -162,12 +197,24 @@ export function replaceColors(
         const rgb = hexToRgb(hexColor);
         if (rgb) {
           const targetHsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-          replacements.push({ range: part.originalColorRange, targetHsl });
+          replacements.push({ 
+            range: part.originalColorRange, 
+            targetHsl,
+            region: part.region
+          });
         }
       }
     }
 
+    // Vypočítám měřítko mezi viewBox (1000x1400) a skutečnou velikostí obrázku
+    const scaleX = canvas.width / 1000;
+    const scaleY = canvas.height / 1400;
+
     for (let i = 0; i < data.length; i += 4) {
+      const pixelIndex = i / 4;
+      const x = pixelIndex % canvas.width;
+      const y = Math.floor(pixelIndex / canvas.width);
+      
       const r = data[i];
       const g = data[i + 1];
       const b = data[i + 2];
@@ -177,7 +224,18 @@ export function replaceColors(
       
       const [h, s, l] = rgbToHsl(r, g, b);
       
-      for (const { range, targetHsl } of replacements) {
+      // Převod pixel souřadnic na viewBox souřadnice
+      const viewBoxX = x / scaleX;
+      const viewBoxY = y / scaleY;
+      
+      for (const { range, targetHsl, region } of replacements) {
+        // Kontrola, zda pixel leží v polygonu (pokud je region definován)
+        if (region && region.length > 0) {
+          if (!isPointInPolygon(viewBoxX, viewBoxY, region)) {
+            continue; // Pixel není v polygonu, zkusím další replacement
+          }
+        }
+        
         if (isInColorRange(h, s, l, range)) {
           const normalizedL = (l - range.lMin) / (range.lMax - range.lMin);
           const targetVariance = 15;

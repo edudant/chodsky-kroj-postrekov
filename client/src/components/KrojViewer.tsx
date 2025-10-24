@@ -57,32 +57,36 @@ export default function KrojViewer({ onPartClick, selectedPart, colors }: KrojVi
           viewBox="0 0 1000 1400"
           preserveAspectRatio="xMidYMid meet"
         >
-          <rect 
-            x="50" y="850" width="200" height="400"
+          {/* Sukně - malý kousek vlevo */}
+          <polygon 
+            points="351,988 354,950 354,868 356,772 371,638 394,600 359,593 327,630 264,976"
             fill="transparent"
             className="cursor-pointer hover:fill-primary/10 transition-colors pointer-events-auto"
             onClick={() => onPartClick('sukne')}
             data-testid="region-sukne"
           />
           
-          <rect 
-            x="300" y="700" width="450" height="550"
+          {/* Fjertuch - zelená zástěra */}
+          <polygon 
+            points="389,599 364,629 349,754 349,796 351,863 339,1031 416,1051 531,1045 555,1040 722,1041 727,1027 869,1023 901,1012 861,772 822,661 822,627 799,583 650,575 598,541 570,594 553,599 508,587 429,603"
             fill="transparent"
             className="cursor-pointer hover:fill-primary/10 transition-colors pointer-events-auto"
             onClick={() => onPartClick('fjertuch')}
             data-testid="region-fjertuch"
           />
           
-          <rect 
-            x="250" y="100" width="500" height="400"
+          {/* Šátek - na hlavě */}
+          <polygon 
+            points="506,269 528,288 533,303 538,329 538,354 526,370 501,385 568,461 613,514 657,544 705,569 725,543 749,522 769,496 787,456 797,432 784,388 769,394 777,421 757,440 730,463 722,477 715,508 697,517 682,478 667,437 633,428 598,409 573,355 555,328 533,290"
             fill="transparent"
             className="cursor-pointer hover:fill-primary/10 transition-colors pointer-events-auto"
             onClick={() => onPartClick('satek')}
             data-testid="region-satek"
           />
           
-          <rect 
-            x="620" y="550" width="80" height="100"
+          {/* Pantl - malý kousek nad rukou */}
+          <polygon 
+            points="441,514 431,536 456,545 478,535 521,529 523,520"
             fill="transparent"
             className="cursor-pointer hover:fill-primary/10 transition-colors pointer-events-auto"
             onClick={() => onPartClick('pantle')}

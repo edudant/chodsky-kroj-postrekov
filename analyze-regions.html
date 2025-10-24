@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analýza regionů kroje</title>
+    <style>
+        body { margin: 20px; font-family: Arial; }
+        #container { position: relative; display: inline-block; }
+        canvas { border: 2px solid #333; cursor: crosshair; }
+        #info { margin-top: 10px; font-family: monospace; }
+        .region-box { position: absolute; border: 3px solid; pointer-events: none; }
+        .controls { margin-bottom: 20px; }
+        button { margin-right: 10px; padding: 5px 10px; }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="drawRegion('satek', '#ff0000')">Šátek (červená)</button>
+        <button onclick="drawRegion('fjertuch', '#00ff00')">Fjertuch (zelená)</button>
+        <button onclick="drawRegion('sukne', '#0000ff')">Sukně (modrá)</button>
+        <button onclick="drawRegion('pantle', '#ff00ff')">Pantl (fialová)</button>
+        <button onclick="clearRegions()">Vymazat</button>
+    </div>
+    
+    <div id="container">
+        <canvas id="canvas"></canvas>
+    </div>
+    
+    <div id="info">
+        <div>Rozměry viewBox: 1000 x 1400</div>
+        <div>Klikni a táhni pro vyznačení regionu</div>
+        <div id="coords">Pozice: -</div>
+        <div id="regionInfo">Region: -</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        let startX, startY, isDrawing = false;
+        let currentRegion = null;
+        let currentColor = null;
+        const regions = {};
+        
+        img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+        };
+        
+        img.src = '/kroj-sablona.jpg';
+        
+        function toViewBox(x, y) {
+            const scaleX = 1000 / img.width;
+            const scaleY = 1400 / img.height;
+            return {
+                x: Math.round(x * scaleX),
+                y: Math.round(y * scaleY)
+            };
+        }
+        
+        function drawRegion(name, color) {
+            currentRegion = name;
+            currentColor = color;
+        }
+        
+        function clearRegions() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+            document.getElementById('regionInfo').textContent = 'Region: -';
+        }
+        
+        canvas.addEventListener('mousedown', (e) => {
+            if (!currentRegion) return;
+            const rect = canvas.getBoundingClientRect();
+            startX = e.clientX - rect.left;
+            startY = e.clientY - rect.top;
+            isDrawing = true;
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const vb = toViewBox(x, y);
+            document.getElementById('coords').textContent = 
+                `Pixel: (${Math.round(x)}, ${Math.round(y)}) | ViewBox: (${vb.x}, ${vb.y})`;
+            
+            if (isDrawing) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+                
+                const width = x - startX;
+                const height = y - startY;
+                
+                ctx.strokeStyle = currentColor;
+                ctx.lineWidth = 3;
+                ctx.strokeRect(startX, startY, width, height);
+            }
+        });
+        
+        canvas.addEventListener('mouseup', (e) => {
+            if (!isDrawing || !currentRegion) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const endX = e.clientX - rect.left;
+            const endY = e.clientY - rect.top;
+            
+            const x = Math.min(startX, endX);
+            const y = Math.min(startY, endY);
+            const width = Math.abs(endX - startX);
+            const height = Math.abs(endY - startY);
+            
+            const vbStart = toViewBox(x, y);
+            const vbEnd = toViewBox(x + width, y + height);
+            
+            regions[currentRegion] = {
+                pixel: { x, y, width, height },
+                viewBox: { 
+                    x: vbStart.x, 
+                    y: vbStart.y, 
+                    width: vbEnd.x - vbStart.x, 
+                    height: vbEnd.y - vbStart.y 
+                }
+            };
+            
+            document.getElementById('regionInfo').textContent = 
+                `${currentRegion}: { x: ${vbStart.x}, y: ${vbStart.y}, width: ${vbEnd.x - vbStart.x}, height: ${vbEnd.y - vbStart.y} }`;
+            
+            console.log(`${currentRegion}:`, regions[currentRegion].viewBox);
+            
+            isDrawing = false;
+            currentRegion = null;
+        });
+    </script>
+</body>
+</html>

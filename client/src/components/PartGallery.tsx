@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Expand } from 'lucide-react';
+import { Images } from 'lucide-react';
 import ImageZoom from './ImageZoom';
 
 interface PartVariant {
@@ -23,12 +23,6 @@ export default function PartGallery({ partName, variants, selectedVariant, onSel
   const [zoomOpen, setZoomOpen] = useState(false);
   const [zoomIndex, setZoomIndex] = useState(0);
 
-  const handleZoomOpen = (index: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setZoomIndex(index);
-    setZoomOpen(true);
-  };
-
   const handleNavigate = (index: number) => {
     setZoomIndex(index);
   };
@@ -41,13 +35,22 @@ export default function PartGallery({ partName, variants, selectedVariant, onSel
 
   return (
     <div className="space-y-4">
-      <div>
+      <div className="flex items-center gap-2">
         <h3 className="text-xl md:text-2xl font-serif font-semibold text-foreground" data-testid={`heading-${partName.toLowerCase()}`}>
           {partName}
         </h3>
-        <p className="text-sm text-muted-foreground mt-1">
-          Vyberte barevnou variantu • Klikněte na obrázek pro zvětšení
-        </p>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => {
+            setZoomIndex(0);
+            setZoomOpen(true);
+          }}
+          title="Zobrazit galerii"
+        >
+          <Images className="h-5 w-5" />
+        </Button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -73,15 +76,6 @@ export default function PartGallery({ partName, variants, selectedVariant, onSel
                   data-testid={`img-variant-${variant.id}`}
                 />
               </div>
-              <Button
-                variant="secondary"
-                size="icon"
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 shadow-lg z-10"
-                onClick={(e) => handleZoomOpen(index, e)}
-                data-testid={`button-zoom-${variant.id}`}
-              >
-                <Expand className="h-4 w-4" />
-              </Button>
             </div>
             <div className="flex items-center gap-2">
               <div 
